@@ -1,0 +1,18 @@
+cmake_minimum_required(VERSION 2.8.0)
+project (GRASP2)
+set(CMAKE_CXX_FLAGS "-fopenmp -O3 -std=c++0x")
+# include directory
+include_directories(GenGraph)
+# handling boost library linking
+find_package(Boost 1.46.0 COMPONENTS iostreams filesystem system program_options)
+if(NOT Boost_FOUND)
+  message(FATAL_ERROR " Cannot find Boost C++ Libraries version 1.46 or higher, abort.")
+elseif (Boost_FOUND)
+  include_directories(${include_directories} ${Boost_INCLUDE_DIRS})
+  link_directories(${link_directories} ${Boost_LIB_DIRS})
+  add_executable(bin/grasp2-build ./GenGraph/sfa_build.cc ./GenGraph/gsa.cc ./GenGraph/sfa.cc ./GenGraph/interval_array.cc ./GenGraph/database_index.cc ./GenGraph/main_build.cc ./GenGraph/kmer_filtering.cc ./GenGraph/sequence_search.cc ./GenGraph/align_batch.cc ./GenGraph/string_graph.cc ./GenGraph/bwt.cc ./GenGraph/bio_alphabet.cc ./GenGraph/loader.cc ./GenGraph/concatenator.cc ./GenGraph/contig_refinement.cc ./GenGraph/bwt_search.cc ./GenGraph/kmer_unitcoder.cc ./GenGraph/minimizer_sort.cc ./GenGraph/divsufsort.cc ./GenGraph/sssort.cc ./GenGraph/trsort.cc ./GenGraph/utils.cc)
+  target_link_libraries (bin/grasp2-build ${Boost_LIBRARIES})
+  add_executable(bin/grasp2-assemble ./GenGraph/main_assemble.cc ./GenGraph/kmer_filtering.cc ./GenGraph/sequence_search.cc ./GenGraph/align_batch.cc ./GenGraph/string_graph.cc ./GenGraph/bwt.cc ./GenGraph/bio_alphabet.cc ./GenGraph/loader.cc ./GenGraph/concatenator.cc ./GenGraph/contig_refinement.cc ./GenGraph/bwt_search.cc ./GenGraph/kmer_unitcoder.cc ./GenGraph/minimizer_sort.cc ./GenGraph/divsufsort.cc ./GenGraph/sssort.cc ./GenGraph/trsort.cc ./GenGraph/utils.cc)
+  target_link_libraries (bin/grasp2-assemble ${Boost_LIBRARIES})
+endif (NOT Boost_FOUND)
+

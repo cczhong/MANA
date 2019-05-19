@@ -1,0 +1,4 @@
+/home/cczhong/Codes/MANA/CMakeFiles/rebuild_cache.dir
+/home/cczhong/Codes/MANA/CMakeFiles/edit_cache.dir
+/home/cczhong/Codes/MANA/CMakeFiles/bin/grasp2-assemble.dir
+/home/cczhong/Codes/MANA/CMakeFiles/bin/grasp2-build.dir
