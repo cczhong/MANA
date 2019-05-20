@@ -683,6 +683,33 @@ GenGraph/minimizer_sort.cc.s:
 	$(MAKE) -f CMakeFiles/bin/grasp2-build.dir/build.make CMakeFiles/bin/grasp2-build.dir/GenGraph/minimizer_sort.cc.s
 .PHONY : GenGraph/minimizer_sort.cc.s
 
+GenGraph/overlap.o: GenGraph/overlap.cc.o
+
+.PHONY : GenGraph/overlap.o
+
+# target to build an object file
+GenGraph/overlap.cc.o:
+	$(MAKE) -f CMakeFiles/bin/grasp2-GenGraph.dir/build.make CMakeFiles/bin/grasp2-GenGraph.dir/GenGraph/overlap.cc.o
+.PHONY : GenGraph/overlap.cc.o
+
+GenGraph/overlap.i: GenGraph/overlap.cc.i
+
+.PHONY : GenGraph/overlap.i
+
+# target to preprocess a source file
+GenGraph/overlap.cc.i:
+	$(MAKE) -f CMakeFiles/bin/grasp2-GenGraph.dir/build.make CMakeFiles/bin/grasp2-GenGraph.dir/GenGraph/overlap.cc.i
+.PHONY : GenGraph/overlap.cc.i
+
+GenGraph/overlap.s: GenGraph/overlap.cc.s
+
+.PHONY : GenGraph/overlap.s
+
+# target to generate assembly for a file
+GenGraph/overlap.cc.s:
+	$(MAKE) -f CMakeFiles/bin/grasp2-GenGraph.dir/build.make CMakeFiles/bin/grasp2-GenGraph.dir/GenGraph/overlap.cc.s
+.PHONY : GenGraph/overlap.cc.s
+
 GenGraph/sequence_search.o: GenGraph/sequence_search.cc.o
 
 .PHONY : GenGraph/sequence_search.o
@@ -970,6 +997,9 @@ help:
 	@echo "... GenGraph/minimizer_sort.o"
 	@echo "... GenGraph/minimizer_sort.i"
 	@echo "... GenGraph/minimizer_sort.s"
+	@echo "... GenGraph/overlap.o"
+	@echo "... GenGraph/overlap.i"
+	@echo "... GenGraph/overlap.s"
 	@echo "... GenGraph/sequence_search.o"
 	@echo "... GenGraph/sequence_search.i"
 	@echo "... GenGraph/sequence_search.s"

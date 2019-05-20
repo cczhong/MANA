@@ -1,4 +1,5 @@
 #include "sfa_build.h"
+#include "overlap.h"
 //#include "reduced_alphabet.h"
 //#include "database_index.h"
 //#include "reachable_reads.h"
@@ -49,7 +50,7 @@ int main(int argc, char** argv)  {
       ("db", boost::program_options::value<string>(&db_file), "short-peptide reads (in FASTA format)")
       ("contig_out", boost::program_options::value<string>(&output), "assembled contigs output (in FASTA format)")
       ("alignment_out", boost::program_options::value<string>(&aln_output), "alignment output (between query and contigs, in BLAST-style format)")
-      ("work_space", boost::program_options::value<string>(&workspace_dir)->default_value("WorkSpace"), "working directory for indexing file dump")
+      ("work_space", boost::program_options::value<string>(&workspace_dir)->default_value("index"), "working directory for indexing file dump")
       ("seed_score_scale", boost::program_options::value<double>(&seed_score_scale), "selectivity for the seeds (default 0.6, higher means less seeds/faster runtime)")
       ("assembly_depth", boost::program_options::value<int>(&assembly_depth)->default_value(20), "maixmum depth of assembly path (each direction)")
       ("scoring_matrix", boost::program_options::value<int>(&scoring_matrix)->default_value(0), "scoring matrix\n 0: BLOSUM62, 1: BLOSUM80, 2: BLOSUM90,\n 3: BLOSUM50, 4: BLOSUM45, 5: PAM250,\n 6: PAM70, 7: PAM30")
@@ -114,8 +115,10 @@ int main(int argc, char** argv)  {
   // load sequences
   SFABuild* db_seq = new SFABuild(db_file);
   string db_stem = db_seq->GetFileStem(db_file);
-  db_seq->LoadSFA(workspace_dir, db_stem);
-  string query_stem = db_seq->GetFileStem(query);
+  //db_seq->LoadSFA(workspace_dir, db_stem);
+  //string query_stem = db_seq->GetFileStem(query);
+  Overlap overlap_obj;
+  overlap_obj.DetectOverlaps(NULL, workspace_dir, db_stem, 0);
 /*
   // initiate scoreing function
   ScoringFunction<int>* score_scheme = new ScoringFunction<int>(

@@ -89,6 +89,7 @@ CMakeFiles/bin/grasp2-GenGraph.dir/GenGraph/main_GenGraph.cc.o: GenGraph/file.h
 CMakeFiles/bin/grasp2-GenGraph.dir/GenGraph/main_GenGraph.cc.o: GenGraph/gsa.h
 CMakeFiles/bin/grasp2-GenGraph.dir/GenGraph/main_GenGraph.cc.o: GenGraph/interval_array.h
 CMakeFiles/bin/grasp2-GenGraph.dir/GenGraph/main_GenGraph.cc.o: GenGraph/main_GenGraph.cc
+CMakeFiles/bin/grasp2-GenGraph.dir/GenGraph/main_GenGraph.cc.o: GenGraph/overlap.h
 CMakeFiles/bin/grasp2-GenGraph.dir/GenGraph/main_GenGraph.cc.o: GenGraph/sequence.h
 CMakeFiles/bin/grasp2-GenGraph.dir/GenGraph/main_GenGraph.cc.o: GenGraph/sfa.h
 CMakeFiles/bin/grasp2-GenGraph.dir/GenGraph/main_GenGraph.cc.o: GenGraph/sfa_build.h
@@ -101,6 +102,16 @@ CMakeFiles/bin/grasp2-GenGraph.dir/GenGraph/minimizer_sort.cc.o: GenGraph/kmer_u
 CMakeFiles/bin/grasp2-GenGraph.dir/GenGraph/minimizer_sort.cc.o: GenGraph/minimizer_sort.cc
 CMakeFiles/bin/grasp2-GenGraph.dir/GenGraph/minimizer_sort.cc.o: GenGraph/minimizer_sort.h
 CMakeFiles/bin/grasp2-GenGraph.dir/GenGraph/minimizer_sort.cc.o: GenGraph/reduced_alphabet.h
+
+CMakeFiles/bin/grasp2-GenGraph.dir/GenGraph/overlap.cc.o: GenGraph/divsufsort.h
+CMakeFiles/bin/grasp2-GenGraph.dir/GenGraph/overlap.cc.o: GenGraph/file.h
+CMakeFiles/bin/grasp2-GenGraph.dir/GenGraph/overlap.cc.o: GenGraph/gsa.h
+CMakeFiles/bin/grasp2-GenGraph.dir/GenGraph/overlap.cc.o: GenGraph/interval_array.h
+CMakeFiles/bin/grasp2-GenGraph.dir/GenGraph/overlap.cc.o: GenGraph/overlap.cc
+CMakeFiles/bin/grasp2-GenGraph.dir/GenGraph/overlap.cc.o: GenGraph/overlap.h
+CMakeFiles/bin/grasp2-GenGraph.dir/GenGraph/overlap.cc.o: GenGraph/sfa.h
+CMakeFiles/bin/grasp2-GenGraph.dir/GenGraph/overlap.cc.o: GenGraph/timer.h
+CMakeFiles/bin/grasp2-GenGraph.dir/GenGraph/overlap.cc.o: GenGraph/divsufsort64.h
 
 CMakeFiles/bin/grasp2-GenGraph.dir/GenGraph/sequence_search.cc.o: GenGraph/align_batch.h
 CMakeFiles/bin/grasp2-GenGraph.dir/GenGraph/sequence_search.cc.o: GenGraph/bio_alphabet.h
