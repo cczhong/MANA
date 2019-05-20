@@ -138,17 +138,19 @@ int main(int argc, char** argv)  {
   // load in sequence from file for forward sequences
   SFABuild db_seq(db_file);
   string db_stem = db_seq.GetFileStem(db_file);
-  db_seq.BuildSFADefault();
-  db_seq.BuildKeyArrayDefault();
-  double fw_sfa_build_time = mytime();
-  printElapsed(start_time, fw_sfa_build_time, "GRASPx::Build info: finished building forward suffix array");
-  start_time = mytime();
-  // dump the forward version suffix array
-  db_seq.DumpSFA(workspace_dir, db_stem);
-  double fw_sfa_dump_time = mytime();
-  printElapsed(start_time, fw_sfa_dump_time, "GRASPx::Build info: finished writing forward suffix array");
+  db_seq.BuildSFAMulti(5, workspace_dir, db_stem);
   
-  /*
+  //db_seq.BuildSFADefault();
+  //db_seq.BuildKeyArrayDefault();
+  //double fw_sfa_build_time = mytime();
+  //printElapsed(start_time, fw_sfa_build_time, "GRASPx::Build info: finished building forward suffix array");
+  //start_time = mytime();
+  // dump the forward version suffix array
+  //db_seq.DumpSFA(workspace_dir, db_stem);
+  //double fw_sfa_dump_time = mytime();
+  //printElapsed(start_time, fw_sfa_dump_time, "GRASPx::Build info: finished writing forward suffix array");
+  
+  /*  
   start_time = mytime();
   // prepare DatabaseIndex object
   DatabaseIndex db_dump(alph_id, seed_len, extd_len);

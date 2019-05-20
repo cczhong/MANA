@@ -22,12 +22,12 @@ typedef uint16_t POSTYPE;
 /** 
  * \brief Generalized suffix array type definition
  */
-struct GsaType
+struct GSATYPE
 {
 	RIDTYPE doc; ///< document ID
 	POSTYPE pos; ///< position
-	GsaType(){}
-	GsaType(RIDTYPE d, POSTYPE p) 
+	GSATYPE(){}
+	GSATYPE(RIDTYPE d, POSTYPE p) 
 	{
 		doc = d; pos = p;
 	}
@@ -62,12 +62,12 @@ class GSA : public SFA
 	 * Then, find read ID and positions in concatenated string by
 	 * calling __convertWithArrays().
 	 */
-	void buildSFA();
+	void buildGSA();
 
 	/**
 	 * Build GSA and write GSA to file. 
 	 */
-	void buildSFA(const char*);
+	void buildGSA(const char*);
 
 	/** 
 	 * Alternative read ID and position search using binary search.
@@ -90,7 +90,7 @@ class GSA : public SFA
 
 
 	/** Range search of given string without LCP arrays */
-	BoundType searchOnGSA( const SFACHARTYPE *srch, POSTYPE len );
+	BOUNDTYPE searchOnGSA( const SFACHARTYPE *srch, POSTYPE len );
 	
 	/** Get left boundary of query sequence match using LCP arrays */
 	SFAIDXTYPE getLeftBoundWithLCPs(const SFACHARTYPE* pat, POSTYPE len);
@@ -108,10 +108,10 @@ class GSA : public SFA
 	char* getSeq( SFAIDXTYPE p );
 
 	/** Write generalized suffix array */
-	void writeSFA( const char *filename );
+	void writeGSA( const char *filename );
 
 	/** Read generalized suffix array from a file */
-	void readSFA( const char *filename );
+	void readGSA( const char *filename );
 
 
 //=========================
@@ -165,7 +165,7 @@ class GSA : public SFA
 	char*    getEntireSuffix(SFAIDXTYPE);
 
 	/** Get a record at given position */
-	GsaType  getAt(SFAIDXTYPE);
+	GSATYPE  getAt(SFAIDXTYPE);
 
 	/** Get a number of reads */
 	RIDTYPE  getReadCount() { return nreads; }
@@ -196,7 +196,7 @@ class GSA : public SFA
 	 * \param srch pattern to search
 	 * \param len  a length of the pattern
 	 */
-	BoundType search( const SFACHARTYPE *srch, POSTYPE len );
+	BOUNDTYPE search( const SFACHARTYPE *srch, POSTYPE len );
 
 	/**
 	 * Load binary objects
@@ -238,7 +238,7 @@ class GSA : public SFA
 			   
   /********************Newly added or redefined************************************/
   /** Range search of given string using LCP arrays */
-	BoundType searchWithLCPs( const SFACHARTYPE *srch, POSTYPE len );
+	BOUNDTYPE searchWithLCPs( const SFACHARTYPE *srch, POSTYPE len );
 	char* getSuffix_explicit(RIDTYPE rid, POSTYPE pos);
 	char* getSequence_explicit(RIDTYPE rid);
 	POSTYPE  getSuffixLength(SFAIDXTYPE p);
@@ -248,7 +248,7 @@ class GSA : public SFA
   POSTYPE getPos(SFAIDXTYPE p);	
   POSTYPE getLcpArbitrary(SFAIDXTYPE p, SFAIDXTYPE q);
   
-  BoundType searchWithLCPs_bounded(
+  BOUNDTYPE searchWithLCPs_bounded(
       const SFACHARTYPE *srch, POSTYPE len, 
       SFAIDXTYPE left_bound, SFAIDXTYPE right_bound
   );

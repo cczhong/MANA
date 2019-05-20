@@ -41,7 +41,7 @@ typedef saidx_t SFAIDXTYPE;
 //typedef saidx64_t   SFAIDXTYPE;       
 //#endif
 
-typedef std::pair<SFAIDXTYPE, SFAIDXTYPE> BoundType;
+typedef std::pair<SFAIDXTYPE, SFAIDXTYPE> BOUNDTYPE;
 
 const char DELIMITER = '$';
 
@@ -79,10 +79,10 @@ class SFA
 	void clear();
 
 	/** Range search of given string using two precomputed LCP arrays. */
-	BoundType searchWithLCPs( const SFACHARTYPE *srch, int len );
+	BOUNDTYPE searchWithLCPs( const SFACHARTYPE *srch, int len );
 
 	/** Range search of a string without LCP arrays. */
-	BoundType searchOnSFA( const SFACHARTYPE *srch, int len );
+	BOUNDTYPE searchOnSFA( const SFACHARTYPE *srch, int len );
 
 	/** Find left match boundary of query sequence. */
 	SFAIDXTYPE getLeftBoundWithLCPs(const SFACHARTYPE* pat, int len);
@@ -260,7 +260,7 @@ class SFA
 	 * Wrapper for string matching range search.
 	 * A range in SFA is reported.
 	 */
-	BoundType search( const SFACHARTYPE *srch, int len );
+	BOUNDTYPE search( const SFACHARTYPE *srch, int len );
 
 	//=============
 	// File options

@@ -62,6 +62,16 @@ SFABuild::~SFABuild(void) {
   return;
 }
 
+// Accessing the contents in the object
+
+void SFABuild::PrintAllSeqs(void)  {
+  cout << "Sequences in object:" << endl;
+  for(int i = 0; i < num_seqs_; ++ i) {
+    cout << sequence_[i] << endl;
+  }
+  return;
+}
+
 void SFABuild::DestructSFA(void)  {
   // clear suffix array and key array to save memory
   suffix_array_->clear();
@@ -91,13 +101,7 @@ void SFABuild::DestructSequences(void) {
   return;
 }
 
-void SFABuild::PrintAllSeqs(void)  {
-  cout << "Sequences in object:" << endl;
-  for(int i = 0; i < num_seqs_; ++ i) {
-    cout << sequence_[i] << endl;
-  }
-  return;
-}
+
 
 std::string SFABuild::GetFileStem(const std::string& path)  {
   // going backward untill the '\/' character
@@ -211,6 +215,29 @@ void SFABuild::InPlaceReverse(void)  {
 // building the suffix array on the entire set of sequences (default)
 void SFABuild::BuildSFADefault(void) {
   this->BuildSuffixArray(sequence_, suffix_array_);
+  return;
+}
+
+void SFABuild::BuildSFAMulti(const SFAIDXTYPE max_size, std::string &dir, std::string &file_stem)  {
+  RIDTYPE begin = 0;
+  RIDTYPE block_ID = 0;
+  SFAIDXTYPE accum_size = 0;
+  for(RIDTYPE i = 0; i < num_seqs_; ++ i) {
+    accum_size += (SFAIDXTYPE) strlen(sequence_[i]);
+    if(accum_size >= max_size)  {
+      // build the SFA for the current sequence block
+      if(is_sfa_built_) { delete suffix_array_; }
+      suffix_array_ = new GSA((char**) (sequence_ + begin), i - begin + 1, true);
+      is_sfa_built_ = true;
+      // write the suffix array index
+      std::string block_stem = file_stem + "." + std::to_string(block_ID);
+      DumpSFA(dir, block_stem);
+      // update the index trackers
+      ++ block_ID;
+      begin = i + 1;
+      accum_size = 0;
+    }
+  }
   return;
 }
 

@@ -190,10 +190,6 @@ string
 cstring
 -
 
-/home/cczhong/Codes/MANA/GenGraph/gsa.cc
-gsa.h
-/home/cczhong/Codes/MANA/GenGraph/gsa.h
-
 /home/cczhong/Codes/MANA/GenGraph/gsa.h
 algorithm
 -
@@ -447,10 +443,6 @@ reduced_alphabet.h
 /home/cczhong/Codes/MANA/GenGraph/reduced_alphabet.h
 gapped_pattern.h
 /home/cczhong/Codes/MANA/GenGraph/gapped_pattern.h
-
-/home/cczhong/Codes/MANA/GenGraph/sfa.cc
-sfa.h
-/home/cczhong/Codes/MANA/GenGraph/sfa.h
 
 /home/cczhong/Codes/MANA/GenGraph/sfa.h
 stack

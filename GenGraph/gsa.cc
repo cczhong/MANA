@@ -8,13 +8,13 @@ GSA::GSA()
 GSA::GSA( char **s, RIDTYPE n )
 {
     init(s, n);
-    GSA::buildSFA();
+    GSA::buildGSA();
 }
 
 GSA::GSA( char **s, RIDTYPE n, bool gen_lcp )
 {
     init(s, n);
-    GSA::buildSFA();
+    GSA::buildGSA();
     GSA::buildLCPs();
 }
 
@@ -26,7 +26,7 @@ GSA::GSA( char **s,
           const char *mcp_file)
 {
     init(s,n);
-    GSA::buildSFA( gsa_file );
+    GSA::buildGSA( gsa_file );
     GSA::buildLCPs( lcp_file, mcp_file );
 }
 
@@ -51,7 +51,7 @@ void GSA::clear()
     Pos = NULL;
 }
 
-void GSA::buildSFA()
+void GSA::buildGSA()
 {
     double t0 = mytime();
     SFA::buildSFA();
@@ -63,7 +63,7 @@ void GSA::buildSFA()
     if ( verbose ) std::cout << "GSA created:" << mytime()-t0 << " sec\n";
 }
 
-void GSA::buildSFA(const char *gsa_file)
+void GSA::buildGSA(const char *gsa_file)
 {
     double t0 = mytime();
     SFA::buildSFA();
@@ -75,7 +75,7 @@ void GSA::buildSFA(const char *gsa_file)
     if ( verbose ) std::cout << "GSA created:" << mytime()-t0 << " sec\n";
 
     t0 = mytime();
-    GSA::writeSFA( gsa_file );
+    GSA::writeGSA( gsa_file );
     GSA::clear(); 
     if ( verbose ) std::cout << "GSA written & purged:" << mytime()-t0 << " sec\n";
 }
@@ -188,7 +188,7 @@ void GSA::printSuffix()
     }
 }
 
-void GSA::readSFA( const char *filename )
+void GSA::readGSA( const char *filename )
 {
     std::fstream in;
     fio::openFile( in, filename, std::ios::in | std::ios::binary );
@@ -210,7 +210,7 @@ void GSA::load( const char *lcp_file,
                 const char *gsa_file )
 {
     double t0 = mytime();
-    GSA::readSFA( gsa_file );
+    GSA::readGSA( gsa_file );
     if ( verbose ) std::cout << "Suffix array loaded:" << mytime()-t0 << "\n";
     t0 = mytime();
     SFA::readLCP( lcp_file );
@@ -227,10 +227,10 @@ void GSA::load( const char *sfa_file,
                 const char *gsa_file )
 {
     SFA::load( sfa_file, doc_file, lcp_file, mcp_file );
-    GSA::readSFA( gsa_file );
+    GSA::readGSA( gsa_file );
 }
 
-void GSA::writeSFA( const char *gsa_file )
+void GSA::writeGSA( const char *gsa_file )
 {
     std::fstream out;
     fio::openFile( out, gsa_file, std::ios::out | std::ios::binary );
@@ -250,7 +250,7 @@ void GSA::dump( const char *sfa_file,
                 const char *gsa_file )
 {
     SFA::dump( sfa_file, doc_file, lcp_file, mcp_file );
-    GSA::writeSFA( gsa_file );
+    GSA::writeGSA( gsa_file );
 }
 
 char* GSA::getSuffix( SFAIDXTYPE p )
@@ -270,13 +270,13 @@ char* GSA::getEntireSuffix( SFAIDXTYPE p )
 }
 
 
-GsaType GSA::getAt( SFAIDXTYPE p )
+GSATYPE GSA::getAt( SFAIDXTYPE p )
 {
     assert( p <= size );
-    return GsaType( Ids[p], Pos[p] );
+    return GSATYPE( Ids[p], Pos[p] );
 }
 
-BoundType GSA::search( const SFACHARTYPE *srch, POSTYPE len )
+BOUNDTYPE GSA::search( const SFACHARTYPE *srch, POSTYPE len )
 {
     assert(seqs!=NULL);
     return ( LCP != NULL && mLCP != NULL ) ?
@@ -284,32 +284,32 @@ BoundType GSA::search( const SFACHARTYPE *srch, POSTYPE len )
         this->searchOnGSA( srch, len ) ;
 }
 
-BoundType GSA::searchWithLCPs( const SFACHARTYPE *srch, POSTYPE len )
+BOUNDTYPE GSA::searchWithLCPs( const SFACHARTYPE *srch, POSTYPE len )
 {
     assert(seqs!=NULL);
     SFAIDXTYPE left  = this->getLeftBoundWithLCPs( srch, len );
     SFAIDXTYPE right = this->getRightBoundWithLCPs( srch, len );
 
-    return BoundType(left-1, right-1);
+    return BOUNDTYPE(left-1, right-1);
 }
 
-BoundType GSA::searchWithLCPs_bounded(
+BOUNDTYPE GSA::searchWithLCPs_bounded(
     const SFACHARTYPE *srch, POSTYPE len, 
     SFAIDXTYPE left_bound, SFAIDXTYPE right_bound
 ) {
   assert(seqs!=NULL);
   SFAIDXTYPE left  = this->getLeftBoundWithLCPs_bounded(srch, len, left_bound, right_bound);
   SFAIDXTYPE right = this->getRightBoundWithLCPs_bounded(srch, len, left_bound, right_bound);
-  return BoundType(left-1, right-1);
+  return BOUNDTYPE(left-1, right-1);
 }
 
-BoundType GSA::searchOnGSA( const SFACHARTYPE *srch, POSTYPE len )
+BOUNDTYPE GSA::searchOnGSA( const SFACHARTYPE *srch, POSTYPE len )
 {
     assert(seqs!=NULL);
     SFAIDXTYPE left  = this->getLeftBoundOnGSA( srch, len );
     SFAIDXTYPE right = this->getRightBoundOnGSA( srch, len );
 
-    return BoundType(left-1, right-1);
+    return BOUNDTYPE(left-1, right-1);
 }
 
 char* GSA::getSeq(SFAIDXTYPE p )

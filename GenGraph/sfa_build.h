@@ -35,6 +35,7 @@ class SFABuild {
   void CopySequences(int num_sequences, char **source, char **target);
   void InPlaceReverse(void);
   void BuildSFADefault(void);
+  void BuildSFAMulti(const SFAIDXTYPE max_size, std::string &dir, std::string &file_stem);
   void BuildKeyArrayDefault(void);
   void DumpSFA(std::string& dir, std::string& file_stem);
   void LoadSFA(std::string& dir, std::string& file_stem);

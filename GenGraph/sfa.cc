@@ -290,27 +290,27 @@ void SFA::search( std::vector<SFAIDXTYPE> &pos,
 
 // No match: if left > right
 // #  Match: right-left+1
-BoundType SFA::search( const SFACHARTYPE *srch, int len )
+BOUNDTYPE SFA::search( const SFACHARTYPE *srch, int len )
 {
     return ( LCP != NULL && mLCP != NULL ) ?
         searchWithLCPs( srch, len ) :
         searchOnSFA( srch, len );
 }
 
-BoundType SFA::searchWithLCPs( const SFACHARTYPE *srch, int len )
+BOUNDTYPE SFA::searchWithLCPs( const SFACHARTYPE *srch, int len )
 {
     SFAIDXTYPE left  = getLeftBoundWithLCPs( srch, len );
     SFAIDXTYPE right = getRightBoundWithLCPs( srch, len );
 
-    return BoundType(left-1, right-1);
+    return BOUNDTYPE(left-1, right-1);
 }
 
-BoundType SFA::searchOnSFA( const SFACHARTYPE *srch, int len )
+BOUNDTYPE SFA::searchOnSFA( const SFACHARTYPE *srch, int len )
 {
     SFAIDXTYPE left  = getLeftBoundOnSFA( srch, len );
     SFAIDXTYPE right = getRightBoundOnSFA( srch, len );
 
-    return BoundType(left-1, right-1);
+    return BOUNDTYPE(left-1, right-1);
 }
 
 
