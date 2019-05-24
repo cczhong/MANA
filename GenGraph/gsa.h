@@ -17,7 +17,7 @@
 #include "sfa.h"
 
 typedef uint32_t RIDTYPE;
-typedef uint16_t POSTYPE;
+typedef LCPTYPE POSTYPE;
 
 /** 
  * \brief Generalized suffix array type definition

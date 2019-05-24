@@ -71,8 +71,8 @@ void DatabaseIndex::BuildSeedmerMap(SFABuild& seq_obj) {
       //cout << "BuildSeedmerMap: seed-mer: " << mer << endl;
       auto it = seed_mer_map_.find(mer);
       if(it == seed_mer_map_.end())  { // when the seed is not presented in the map
-        PositionType mer_pos;
-        mer_pos.rid = (RIDTYPE) seq_obj.suffix_array_->getId(i);
+        GSATYPE mer_pos;
+        mer_pos.doc = (RIDTYPE) seq_obj.suffix_array_->getId(i);
         mer_pos.pos = (POSTYPE) seq_obj.suffix_array_->getPos(i);
         seed_mer_map_.insert({mer, mer_pos});
       }
@@ -212,22 +212,22 @@ void DatabaseIndex::LoadReducedMap(
 }
 */
 
-bool _cmp_position(const PositionType& a, const PositionType& b) {
-  if(a.rid < b.rid)  {
+bool _cmp_position(const GSATYPE& a, const GSATYPE& b) {
+  if(a.doc < b.doc)  {
     return true;
   }
   return false;
 }
 
 bool DatabaseIndex::IsPositionListMatch(
-    std::list<PositionType>& l1, std::list<PositionType>& l2
+    std::list<GSATYPE>& l1, std::list<GSATYPE>& l2
 ) {
   if(l1.size() != l2.size())  {
     return false;
   }
   auto it_l2 = l2.begin();
   for(auto it_l1 = l1.begin(); it_l1 != l1.end(); ++ it_l1) {
-    if(it_l1->rid != it_l2->rid)  {
+    if(it_l1->doc != it_l2->doc)  {
       return false;
     }
     ++ it_l2;
@@ -236,16 +236,16 @@ bool DatabaseIndex::IsPositionListMatch(
 }
 
 bool DatabaseIndex::IsExtRedundant(
-    std::vector<std::list<PositionType> >& fw_ext, 
-    std::vector<std::list<PositionType> >& re_ext, 
+    std::vector<std::list<GSATYPE> >& fw_ext, 
+    std::vector<std::list<GSATYPE> >& re_ext, 
     std::unordered_map<RIDTYPE, std::set<int> >& read_map_table, 
-    std::list<PositionType>& fw_phase, std::list<PositionType>& re_phase, 
+    std::list<GSATYPE>& fw_phase, std::list<GSATYPE>& re_phase, 
     int& map_ID
 ) {
   set<int> fw_pos, re_pos;
   // find out where the reads are mapped to
   for(auto it = fw_phase.begin(); it != fw_phase.end(); ++ it) {
-    auto it_e = read_map_table.find(it->rid);
+    auto it_e = read_map_table.find(it->doc);
     if(it_e != read_map_table.end())  {
       for(auto it_p = it_e->second.begin(); it_p != it_e->second.end(); ++ it_p) {
         fw_pos.insert(*it_p);
@@ -253,7 +253,7 @@ bool DatabaseIndex::IsExtRedundant(
     }
   }
   for(auto it = re_phase.begin(); it != re_phase.end(); ++ it) {
-    auto it_e = read_map_table.find(it->rid);
+    auto it_e = read_map_table.find(it->doc);
     if(it_e != read_map_table.end())  {
       for(auto it_p = it_e->second.begin(); it_p != it_e->second.end(); ++ it_p) {
         re_pos.insert(*it_p);
@@ -294,7 +294,7 @@ void DatabaseIndex::CreateSeedExt(
   // foreach seed mer, search both suffix arrays and record the maximal extension sequences
   //cout << "number of different k-mers:  " << seed_mer_map_.size() << endl;
   for(auto it = seed_mer_map_.begin(); it != seed_mer_map_.end(); ++ it) {
-    list<PositionType> fw_ext_phase, re_ext_phase;
+    list<GSATYPE> fw_ext_phase, re_ext_phase;
     // search for the forward sequence
     string seed = it->first;
     //cout << "Seed" << seed << endl;
@@ -315,7 +315,7 @@ void DatabaseIndex::CreateSeedExt(
     // recompute the position of the reverse seeds
     for(auto it_s = re_ext_phase.begin(); it_s != re_ext_phase.end(); ++ it_s) {
       it_s->pos = (POSTYPE) 
-          (strlen(seq_obj.sequence_[it_s->rid]) - seed_len_ - (int) it_s->pos);
+          (strlen(seq_obj.sequence_[it_s->doc]) - seed_len_ - (int) it_s->pos);
     }
     cout << "Match found" << endl;
     MatchSeedPairSingle(seq_obj, fw_ext_phase, re_ext_phase, ext_seed[seed]);
@@ -328,7 +328,7 @@ void DatabaseIndex::CreateSeedExt(
 
 void DatabaseIndex::GetSeedExt(
     SFABuild &seq_obj, int min_seed_coverage,
-    std::unordered_map<std::string, std::list<PositionType> > &ext
+    std::unordered_map<std::string, std::list<GSATYPE> > &ext
 ) {
   // check if the seed-mer map is built
   if(!is_smm_built_)  {
@@ -340,7 +340,7 @@ void DatabaseIndex::GetSeedExt(
     exit(0);
   }
   for(auto it = seed_mer_map_.begin(); it != seed_mer_map_.end(); ++ it) {
-    list<PositionType> fw_ext_phase;
+    list<GSATYPE> fw_ext_phase;
     // search for the forward sequence
     string seed = it->first;
     //cout << "Seed" << seed << endl;
@@ -357,7 +357,7 @@ void DatabaseIndex::GetSeedExt(
 
 void DatabaseIndex::GetSeedExtRev(
     SFABuild &rev_seq_obj, int min_seed_coverage,
-    std::unordered_map<std::string, std::list<PositionType> > &rev_ext
+    std::unordered_map<std::string, std::list<GSATYPE> > &rev_ext
 ) {
   // check if the seed-mer map is built
   if(!is_smm_built_)  {
@@ -369,7 +369,7 @@ void DatabaseIndex::GetSeedExtRev(
     exit(0);
   }
   for(auto it = seed_mer_map_.begin(); it != seed_mer_map_.end(); ++ it) {
-    list<PositionType> re_ext_phase;
+    list<GSATYPE> re_ext_phase;
     // search for the forward sequence
     string seed = it->first;
     string rev_seed(seed.rbegin(), seed.rend());
@@ -382,7 +382,7 @@ void DatabaseIndex::GetSeedExtRev(
     // recompute the position of the reverse seeds
     for(auto it_s = re_ext_phase.begin(); it_s != re_ext_phase.end(); ++ it_s) {
       it_s->pos = (POSTYPE) 
-          (strlen(rev_seq_obj.sequence_[it_s->rid]) - seed_len_ - (int) it_s->pos);
+          (strlen(rev_seq_obj.sequence_[it_s->doc]) - seed_len_ - (int) it_s->pos);
     }
     rev_ext[seed] = re_ext_phase;
   }
@@ -391,8 +391,8 @@ void DatabaseIndex::GetSeedExtRev(
 
 void DatabaseIndex::MatchSeedPair(
     SFABuild &seq_obj,
-    std::unordered_map<std::string, std::list<PositionType> > &ext,
-    std::unordered_map<std::string, std::list<PositionType> > &rev_ext,
+    std::unordered_map<std::string, std::list<GSATYPE> > &ext,
+    std::unordered_map<std::string, std::list<GSATYPE> > &rev_ext,
     std::unordered_map<std::string, std::list<READPAIRTYPE> >& ext_pair
 ) {
   if(!is_smm_built_)  {
@@ -410,14 +410,14 @@ void DatabaseIndex::MatchSeedPair(
   return;
 }
 
-bool _cmp_pos_fw(PositionType& a, PositionType& b) {
+bool _cmp_pos_fw(GSATYPE& a, GSATYPE& b) {
   if(a.pos > b.pos)  {
     return true;
   }
   return false;
 }
 
-bool _cmp_pos_re(PositionType& a, PositionType& b) {
+bool _cmp_pos_re(GSATYPE& a, GSATYPE& b) {
   if(a.pos < b.pos)  {
     return true;
   }
@@ -461,7 +461,7 @@ bool DatabaseIndex::IsSeqCompatible(
 
 void DatabaseIndex::MatchSeedPairSingle(
     SFABuild& seq_obj,
-    std::list<PositionType>& fw_sp, std::list<PositionType>& re_sp,
+    std::list<GSATYPE>& fw_sp, std::list<GSATYPE>& re_sp,
     std::list<READPAIRTYPE>& read_pair
 ) {
   fw_sp.sort(_cmp_pos_fw);
@@ -472,46 +472,46 @@ void DatabaseIndex::MatchSeedPairSingle(
   
   //cout << "*****************************" << endl;
   //for(auto itp = fw_sp.begin(); itp != fw_sp.end(); ++ itp) {
-  //  cout << "FW:  " << itp->rid << endl;
+  //  cout << "FW:  " << itp->doc << endl;
   //}
   //for(auto itp = re_sp.begin(); itp != re_sp.end(); ++ itp) {
-  //  cout << "RE:  " << itp->rid << endl;
+  //  cout << "RE:  " << itp->doc << endl;
   //}
   
   auto it_fw = fw_sp.begin();
   while(it_fw != fw_sp.end()) {
     //cout << "in merge loop lv1" << endl;
-    if(fw_taken.find(it_fw->rid) == fw_taken.end())  {
+    if(fw_taken.find(it_fw->doc) == fw_taken.end())  {
       auto it_re = re_sp.begin();
       while(it_re != re_sp.end()) {
         //cout << "in merge loop lv2" << endl;
         //cout << "//////////////////////////////" << endl;
-        //cout << "$$$: " << seq_obj.sequence_[it_fw->rid] << " " << (int) it_fw->pos << "  " << seq_obj.GetHeader(it_fw->rid) << endl;
-        //cout << "$$$: " << seq_obj.sequence_[it_re->rid] << " " << (int) it_re->pos << "  " << seq_obj.GetHeader(it_re->rid) << endl;
-        if(re_taken.find(it_re->rid) == re_taken.end())  {
+        //cout << "$$$: " << seq_obj.sequence_[it_fw->doc] << " " << (int) it_fw->pos << "  " << seq_obj.GetHeader(it_fw->doc) << endl;
+        //cout << "$$$: " << seq_obj.sequence_[it_re->doc] << " " << (int) it_re->pos << "  " << seq_obj.GetHeader(it_re->doc) << endl;
+        if(re_taken.find(it_re->doc) == re_taken.end())  {
           bool is_merge_success = false;
           READPAIRTYPE rp;
-          rp.rid_fw = it_fw->rid;
+          rp.doc_fw = it_fw->doc;
           rp.r_pos_fw = it_fw->pos;
-          rp.rid_re = it_re->rid;
+          rp.doc_re = it_re->doc;
           rp.r_pos_re = it_re->pos;
           rp.init_fw = rp.init_re = true;
-          rp.overlap = strlen(seq_obj.sequence_[it_re->rid]) - it_re->pos + it_fw->pos;
-          if(rp.rid_fw == rp.rid_re)  {
+          rp.overlap = strlen(seq_obj.sequence_[it_re->doc]) - it_re->pos + it_fw->pos;
+          if(rp.doc_fw == rp.doc_re)  {
             // if the same read is taken
             is_merge_success = true;
           } else if(
-              IsSeqCompatible(seq_obj, seed_len_, it_fw->rid, it_fw->pos, it_re->rid, it_re->pos)
+              IsSeqCompatible(seq_obj, seed_len_, it_fw->doc, it_fw->pos, it_re->doc, it_re->pos)
             ) 
           {
             // if the sequence is compatible
             if(rp.overlap >= 12)  {
               // if overlap is significant enough
               is_merge_success = true;
-            } else if(it_re->pos >= 3 && strlen(seq_obj.sequence_[it_fw->rid]) - seed_len_ > 3)  {
+            } else if(it_re->pos >= 3 && strlen(seq_obj.sequence_[it_fw->doc]) - seed_len_ > 3)  {
             // we need to search the the suffix array to find supporting bridging reads
-              string search_seq = string(seq_obj.sequence_[it_re->rid]).substr(it_re->pos - 3, 3)
-                + string(seq_obj.sequence_[it_fw->rid]).substr(it_fw->pos, seed_len_ + 3);
+              string search_seq = string(seq_obj.sequence_[it_re->doc]).substr(it_re->pos - 3, 3)
+                + string(seq_obj.sequence_[it_fw->doc]).substr(it_fw->pos, seed_len_ + 3);
               //cout << "overlap: " << rp.overlap << endl;
               //cout << "Search_seq:  " << search_seq << endl;
               pair<SFAIDXTYPE, SFAIDXTYPE> range = seq_obj.SearchSFA(search_seq);
@@ -521,10 +521,10 @@ void DatabaseIndex::MatchSeedPairSingle(
             }
           }
           if(is_merge_success)  {
-          //  cout << "Pair matched:" << seq_obj.GetHeader(it_fw->rid) << "  " << seq_obj.GetHeader(it_re->rid) << endl;
+          //  cout << "Pair matched:" << seq_obj.GetHeader(it_fw->doc) << "  " << seq_obj.GetHeader(it_re->doc) << endl;
             read_pair.push_back(rp);
-            fw_taken[it_fw->rid] = true;
-            re_taken[it_re->rid] = true;
+            fw_taken[it_fw->doc] = true;
+            re_taken[it_re->doc] = true;
             break;
           }
         }
@@ -537,32 +537,32 @@ void DatabaseIndex::MatchSeedPairSingle(
   auto it = fw_sp.begin();
   while(it != fw_sp.end()) {
     //cout << "in fw loop lv1" << endl;
-    if(fw_taken.find(it->rid) == fw_taken.end())  {
+    if(fw_taken.find(it->doc) == fw_taken.end())  {
       READPAIRTYPE rp;
-      rp.rid_fw = it->rid;
+      rp.doc_fw = it->doc;
       rp.r_pos_fw = it->pos;
       rp.init_fw = true;
       rp.init_re = false;
       rp.overlap = 0;
       read_pair.push_back(rp);
-      fw_taken[it->rid] = true;
-      //cout << "Pair sole fw:" << seq_obj.GetHeader(it->rid) << endl;
+      fw_taken[it->doc] = true;
+      //cout << "Pair sole fw:" << seq_obj.GetHeader(it->doc) << endl;
     }
     ++ it;
   }
   it = re_sp.begin();
   while(it != re_sp.end()) {
     //cout << "in re loop lv1" << endl;
-    if(re_taken.find(it->rid) == re_taken.end())  {
+    if(re_taken.find(it->doc) == re_taken.end())  {
       READPAIRTYPE rp;
-      rp.rid_re = it->rid;
+      rp.doc_re = it->doc;
       rp.r_pos_re = it->pos;
       rp.init_fw = false;
       rp.init_re = true;
       rp.overlap = 0;
       read_pair.push_back(rp);
-      re_taken[it->rid] = true;
-      //cout << "Pair sole re:" << seq_obj.GetHeader(it->rid) << endl;
+      re_taken[it->doc] = true;
+      //cout << "Pair sole re:" << seq_obj.GetHeader(it->doc) << endl;
     }
     ++ it;
   }
@@ -595,9 +595,9 @@ void DatabaseIndex::DumpSeedExt(
     for(auto it_pf = ext_seed[it->first].begin(); 
         it_pf != ext_seed[it->first].end(); ++ it_pf
     ) {
-      out_fh.write((char*) &(it_pf->rid_fw), sizeof(RIDTYPE));
+      out_fh.write((char*) &(it_pf->doc_fw), sizeof(RIDTYPE));
       out_fh.write((char*) &(it_pf->r_pos_fw), sizeof(POSTYPE));
-      out_fh.write((char*) &(it_pf->rid_re), sizeof(RIDTYPE));
+      out_fh.write((char*) &(it_pf->doc_re), sizeof(RIDTYPE));
       out_fh.write((char*) &(it_pf->r_pos_re), sizeof(POSTYPE));
       out_fh.write((char*) &(it_pf->init_fw), sizeof(bool));
       out_fh.write((char*) &(it_pf->init_re), sizeof(bool));
@@ -646,11 +646,11 @@ void DatabaseIndex::LoadSeedExt(
     in_fh.read((char*) &num_entries, sizeof(RIDTYPE));
     for(int i = 0; i < num_entries; ++ i) {
       READPAIRTYPE sp;
-      in_fh.read((char*) &sp.rid_fw, sizeof(RIDTYPE));
+      in_fh.read((char*) &sp.doc_fw, sizeof(RIDTYPE));
       POSTYPE pf, pr;
       in_fh.read((char*) &pf, sizeof(POSTYPE));
       sp.r_pos_fw = (int) pf;
-      in_fh.read((char*) &sp.rid_re, sizeof(RIDTYPE));
+      in_fh.read((char*) &sp.doc_re, sizeof(RIDTYPE));
       in_fh.read((char*) &pr, sizeof(POSTYPE));
       sp.r_pos_re = (int) pr;
       in_fh.read((char*) &sp.init_fw, sizeof(bool));
@@ -722,7 +722,7 @@ void DatabaseIndex::CreateReadExtWorker(
         // record the extension information
         if(i - old_i > min_ext_coverage && seq_obj.suffix_array_->getSuffixLength(i - 1) > overlap_len_)  {
           OVERLAPTYPE olp;
-          olp.rid = seq_obj.suffix_array_->getId(i - 1);
+          olp.doc = seq_obj.suffix_array_->getId(i - 1);
           olp.len = seq_obj.suffix_array_->getPos(i - 1) + overlap_len_;
           overlaps.push_back(olp);
           //cout << "tgt: " << seq_obj.suffix_array_->getId(i - 1) << endl;
@@ -777,15 +777,15 @@ void DatabaseIndex::DumpReadExt(
     out_fh.write((char*) &num_entries_re, sizeof(RIDTYPE));
     // write the actual Info
     for(auto it_pf = fw_ext_read[it->first].begin(); it_pf != fw_ext_read[it->first].end(); ++ it_pf) {
-      out_fh.write((char*) &(it_pf->rid), sizeof(RIDTYPE));
+      out_fh.write((char*) &(it_pf->doc), sizeof(RIDTYPE));
       out_fh.write((char*) &(it_pf->len), sizeof(POSTYPE));
-      //cout << (int) it_pf->rid << " " << (int) it_pf->len << endl;
+      //cout << (int) it_pf->doc << " " << (int) it_pf->len << endl;
       ++ total_entries;
     }
     //for(auto it_pr = re_ext_read[it->first].begin(); it_pr != re_ext_read[it->first].end(); ++ it_pr) {
-    //  out_fh.write((char*) &(it_pr->rid), sizeof(RIDTYPE));
+    //  out_fh.write((char*) &(it_pr->doc), sizeof(RIDTYPE));
     //  out_fh.write((char*) &(it_pr->len), sizeof(POSTYPE));
-      //cout << (int) it_pr->rid << " " << (int) it_pr->len << endl;
+      //cout << (int) it_pr->doc << " " << (int) it_pr->len << endl;
     //  ++ total_entries;
     //}
   }
@@ -800,15 +800,15 @@ void DatabaseIndex::DumpReadExt(
     out_fh.write((char*) &num_entries_re, sizeof(RIDTYPE));
     // write the actual Info
     //for(auto it_pf = fw_ext_read[it->first].begin(); it_pf != fw_ext_read[it->first].end(); ++ it_pf) {
-    //  out_fh.write((char*) &(it_pf->rid), sizeof(RIDTYPE));
+    //  out_fh.write((char*) &(it_pf->doc), sizeof(RIDTYPE));
     //  out_fh.write((char*) &(it_pf->len), sizeof(POSTYPE));
-      //cout << (int) it_pf->rid << " " << (int) it_pf->len << endl;
+      //cout << (int) it_pf->doc << " " << (int) it_pf->len << endl;
     //  ++ total_entries;
     //}
     for(auto it_pr = re_ext_read[it->first].begin(); it_pr != re_ext_read[it->first].end(); ++ it_pr) {
-      out_fh.write((char*) &(it_pr->rid), sizeof(RIDTYPE));
+      out_fh.write((char*) &(it_pr->doc), sizeof(RIDTYPE));
       out_fh.write((char*) &(it_pr->len), sizeof(POSTYPE));
-      //cout << (int) it_pr->rid << " " << (int) it_pr->len << endl;
+      //cout << (int) it_pr->doc << " " << (int) it_pr->len << endl;
       ++ total_entries;
     }
   }
@@ -854,17 +854,17 @@ void DatabaseIndex::LoadReadExt(
     in_fh.read((char*) &num_entries_re, sizeof(RIDTYPE));
     for(int i = 0; i < num_entries_fw; ++ i) {
       OVERLAPTYPE loc;
-      in_fh.read((char*) &loc.rid, sizeof(RIDTYPE));
+      in_fh.read((char*) &loc.doc, sizeof(RIDTYPE));
       in_fh.read((char*) &loc.len, sizeof(POSTYPE));
-      //cout << "load fw rid:  " << loc.rid << endl;
+      //cout << "load fw rid:  " << loc.doc << endl;
       fw_ext_read[src_rid].push_back(loc);
       -- loaded_num_entries;
     }
     for(int i = 0; i < num_entries_re; ++ i) {
       OVERLAPTYPE loc;
-      in_fh.read((char*) &loc.rid, sizeof(RIDTYPE));
+      in_fh.read((char*) &loc.doc, sizeof(RIDTYPE));
       in_fh.read((char*) &loc.len, sizeof(POSTYPE));
-      //cout << "load re rid:  " << loc.rid << endl;
+      //cout << "load re rid:  " << loc.doc << endl;
       re_ext_read[src_rid].push_back(loc);
       -- loaded_num_entries;
     }

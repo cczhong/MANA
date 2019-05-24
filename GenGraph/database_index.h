@@ -15,17 +15,17 @@
 #include "reduced_alphabet.h"
 #include "scoring_prot.h"
 
-#ifndef _DATABASE_INDEX_
-#define _DATABASE_INDEX_
+#ifndef _DATABASE_INDEX_H_
+#define _DATABASE_INDEX_H_
 
 struct OVERLAPTYPE  {
-  RIDTYPE rid;
+  RIDTYPE doc;  // the target document ID
   POSTYPE len;  // the length of the overlap
 };
 
 struct READPAIRTYPE {
-  RIDTYPE rid_fw;
-  RIDTYPE rid_re;
+  RIDTYPE doc_fw;
+  RIDTYPE doc_re;
   bool init_fw;
   bool init_re;
   int q_pos_fw, r_pos_fw; // the position of the match in the query and the read, respectively
@@ -111,16 +111,16 @@ class DatabaseIndex {
   int GetAlphID(void);
   void GetSeedExt(
       SFABuild &seq_obj, int min_seed_coverage,
-      std::unordered_map<std::string, std::list<PositionType> > &ext
+      std::unordered_map<std::string, std::list<GSATYPE> > &ext
   );
   void GetSeedExtRev(
       SFABuild &rev_seq_obj, int min_seed_coverage,
-      std::unordered_map<std::string, std::list<PositionType> > &rev_ext
+      std::unordered_map<std::string, std::list<GSATYPE> > &rev_ext
   );
   void MatchSeedPair(
       SFABuild &seq_obj,
-      std::unordered_map<std::string, std::list<PositionType> > &ext,
-      std::unordered_map<std::string, std::list<PositionType> > &rev_ext,
+      std::unordered_map<std::string, std::list<GSATYPE> > &ext,
+      std::unordered_map<std::string, std::list<GSATYPE> > &rev_ext,
       std::unordered_map<std::string, std::list<READPAIRTYPE> >& ext_pair
   );
   void CreateReadExtWorker(
@@ -135,16 +135,16 @@ class DatabaseIndex {
   int alph_id_;
   int seed_len_;
   int overlap_len_;
-  std::unordered_map<std::string, PositionType> seed_mer_map_;
+  std::unordered_map<std::string, GSATYPE> seed_mer_map_;
   bool IsExtRedundant(
-      std::vector<std::list<PositionType> >& fw_ext, 
-      std::vector<std::list<PositionType> >& re_ext, 
+      std::vector<std::list<GSATYPE> >& fw_ext, 
+      std::vector<std::list<GSATYPE> >& re_ext, 
       std::unordered_map<RIDTYPE, std::set<int> >& read_map_table, 
-      std::list<PositionType>& fw_phase, std::list<PositionType>& re_phase, 
+      std::list<GSATYPE>& fw_phase, std::list<GSATYPE>& re_phase, 
       int& map_ID
   );
   bool IsPositionListMatch(
-      std::list<PositionType>& l1, std::list<PositionType>& l2
+      std::list<GSATYPE>& l1, std::list<GSATYPE>& l2
   );
   bool IsSeqCompatible(
       SFABuild& seq_obj, int seed_len,
@@ -153,7 +153,7 @@ class DatabaseIndex {
   );
   void MatchSeedPairSingle(
       SFABuild& seq_obj,
-      std::list<PositionType>& fw_sp, std::list<PositionType>& re_sp,
+      std::list<GSATYPE>& fw_sp, std::list<GSATYPE>& re_sp,
       std::list<READPAIRTYPE>& read_pair
   );
 };

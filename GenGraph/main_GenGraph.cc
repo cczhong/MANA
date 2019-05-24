@@ -1,5 +1,7 @@
-#include "sfa_build.h"
 #include "overlap.h"
+#include "util_func.h"
+#include "timer.h"
+
 //#include "reduced_alphabet.h"
 //#include "database_index.h"
 //#include "reachable_reads.h"
@@ -9,9 +11,6 @@
 //#include "assemble_extend.h"
 //#include "contig_refinement.h"
 //#include "assemble_functor.h"
-
-#include "sequence.h"
-#include "timer.h"
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
@@ -110,15 +109,24 @@ int main(int argc, char** argv)  {
   double check_time;
   if(is_verbose)  {
     cout << "============================================================" << endl;
-    cout << "GRASPx::Assemble info: Begin of program execution." << endl;
+    cout << "MANA-GenGraph:: Begin of program execution." << endl;
   }
+  UtilFunc util;
   // load sequences
-  SFABuild* db_seq = new SFABuild(db_file);
-  string db_stem = db_seq->GetFileStem(db_file);
+  string db_stem = util.GetFileStem(db_file);
+  string blk_file = workspace_dir + "/" + db_stem + ".bsz";
+  SFABuild* db_seq = new SFABuild(db_file, blk_file);
+  
   //db_seq->LoadSFA(workspace_dir, db_stem);
   //string query_stem = db_seq->GetFileStem(query);
+  if(is_verbose)  {
+    cout << "MANA-GenGraph:: Sequence database is loaded." << endl;
+  }
   Overlap overlap_obj;
-  overlap_obj.DetectOverlaps(NULL, workspace_dir, db_stem, 0);
+  overlap_obj.DetectOverlaps(*db_seq, workspace_dir, db_stem, 10);
+  if(is_verbose)  {
+    cout << "MANA-GenGraph:: Read overlap computation is completed." << endl;
+  }
 /*
   // initiate scoreing function
   ScoringFunction<int>* score_scheme = new ScoringFunction<int>(

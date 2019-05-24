@@ -1,4 +1,6 @@
 #include "gsa.h"
+#include "sfa_build.h"
+#include "clump.h"
 
 #include <iostream>
 #include <fstream>
@@ -14,8 +16,8 @@
 #include <sstream>
 #include <limits>
 
-#ifndef _OVERLAP_
-#define _OVERLAP_
+#ifndef _OVERLAP_H_
+#define _OVERLAP_H_
 
 class Overlap   {
  public:
@@ -23,10 +25,10 @@ class Overlap   {
   ~Overlap(void);
 
   void DetectOverlaps(
-    const SFACHARTYPE** seq,    // the original set of sequences
-    const std::string& dir,     // the folder that contains the index files
+    SFABuild& seqs,                 // the original set of sequences
+    const std::string& dir,         // the folder that contains the index files
     const std::string& file_stem,   // the file stem
-    const int num_errors        // the number of errors allowed during overlapping
+    const int& min_overlap          // the minimum overlap length
   );
   
  private:
@@ -40,9 +42,9 @@ class Overlap   {
   void OpenIndexFiles(
     const std::string& dir, 
     const std::string& file_stem, 
-    const int num_index,                // the number of indexes to load
-    std::fstream* GSAfh,                // (output) the array that contains the file handles to the generalized suffix array indexes
-    std::fstream* LCPfh                 // (output) the array that contains the file handles to the LCPs
+    const int num_index,                    // the number of indexes to load
+    std::ifstream* GSAfh,  // (output) the array that contains the file handles to the generalized suffix array indexes
+    std::ifstream* LCPfh   // (output) the array that contains the file handles to the LCPs
   );
 
   bool isFileExists (const std::string& file_name) {

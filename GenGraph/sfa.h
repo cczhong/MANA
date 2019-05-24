@@ -48,16 +48,16 @@ const char DELIMITER = '$';
 class SFA
 {
  protected:
-	SFACHARTYPE *concat;  ///< concatenated string
-	SFAIDXTYPE *SA;      ///< suffix array
-	LCPTYPE *LCP;     ///< longest common prefix array
-	LCPTYPE *mLCP;    ///< internal LCPs
-	SFAIDXTYPE size;     ///< size of suffix array
-	char **seqs;   ///< sequence reads
-	int nreads;   ///< # of reads
-	//IntervalArray *ia;      ///< interval array
+	SFACHARTYPE *concat;  	///< concatenated string
+	SFAIDXTYPE *SA;      	///< suffix array
+	LCPTYPE *LCP;     		///< longest common prefix array
+	LCPTYPE *mLCP;    		///< internal LCPs
+	SFAIDXTYPE size;     	///< size of suffix array
+	char **seqs;   			///< sequence reads
+	int nreads;   			///< # of reads
+	//IntervalArray *ia;    ///< interval array
 	IntervalArray ia;
-	bool verbose;  ///< verbosity
+	bool verbose;  			///< verbosity
 
 //=========================
 // private member functions 

@@ -1,5 +1,7 @@
 #include "sfa.h"
 
+using namespace std;
+
 SFA::SFA()
 {
     init();
@@ -113,6 +115,12 @@ void SFA::buildSFA()
     }
 	
     concatenateAllSeqs( );
+    
+    // DEBUG
+    //cout << "Concatenated sequence: " << concat << endl;
+    
+    assert(strlen((char*) concat) > 0);
+    
     SA = new SFAIDXTYPE[size];
     if ( concat == NULL ) {
         std::cerr << "Memory allocation error\n";

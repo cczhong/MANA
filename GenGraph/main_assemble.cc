@@ -12,6 +12,7 @@
 #include "reduced_alphabet.h"
 #include "kmer_filtering.h"
 #include "contig_refinement.h"
+#include "util_func.h"
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
@@ -70,15 +71,6 @@ void PrintElapsed( double s, double e, const char *task )
 			fmod(elapsed,60.0),
 			task);
 	return;
-}
-
-string GetFileStem(const string& path)  {
-  // going backward untill the '\/' character
-  int i;
-  for(i = path.length() - 1; i >= 0; -- i) {
-    if(path[i] == '/')  break;
-  }
-  return path.substr(i + 1, path.length() - i - 1);
 }
 
 int main(int argc, char** argv)  {
@@ -191,7 +183,8 @@ int main(int argc, char** argv)  {
   //}
   
   // Constructing the String Graph
-  string db_stem = GetFileStem(db_file);
+  UtilFunc util;
+  string db_stem = util.GetFileStem(db_file);
   StringGraph strG;
   vector<int> orphan_id;
   vector<string> orphan_seq;

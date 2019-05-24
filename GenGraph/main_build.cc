@@ -13,6 +13,7 @@
 #include "kmer_filtering.h"
 #include "sfa_build.h"
 #include "database_index.h"
+#include "util_func.h"
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
@@ -71,14 +72,6 @@ void PrintElapsed( double s, double e, const char *task )
 	return;
 }
 
-string GetFileStem(const string& path)  {
-  // going backward untill the '\/' character
-  int i;
-  for(i = path.length() - 1; i >= 0; -- i) {
-    if(path[i] == '/')  break;
-  }
-  return path.substr(i + 1, path.length() - i - 1);
-}
 
 int main(int argc, char** argv)  {
   // reading options
@@ -136,10 +129,13 @@ int main(int argc, char** argv)  {
   cout << "============================================================" << endl;
   double start_time = mytime();
   // load in sequence from file for forward sequences
+  UtilFunc util;
+  string db_stem = util.GetFileStem(db_file);
   SFABuild db_seq(db_file);
-  string db_stem = db_seq.GetFileStem(db_file);
-  db_seq.BuildSFAMulti(5, workspace_dir, db_stem);
-  
+  db_seq.BuildSFAMulti(15000000, workspace_dir, db_stem);
+  cout << " Index file written." << endl;
+  cout << "============================================================" << endl;
+
   //db_seq.BuildSFADefault();
   //db_seq.BuildKeyArrayDefault();
   //double fw_sfa_build_time = mytime();

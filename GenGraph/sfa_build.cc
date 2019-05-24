@@ -9,10 +9,18 @@ SFABuild::SFABuild(void)  {
   return;
 }
 
-SFABuild::SFABuild(std::string& file_name)  {
+SFABuild::SFABuild(std::string& seq_file)  {
   is_header_loaded_ = is_sequence_loaded_ = is_sfa_built_ = false;
   is_size_counted_ = false;
-  LoadSequences(file_name);
+  LoadSequences(seq_file);
+  return;
+}
+
+SFABuild::SFABuild(std::string& seq_file, std::string& block_file)  {
+  is_header_loaded_ = is_sequence_loaded_ = is_sfa_built_ = false;
+  is_size_counted_ = false;
+  LoadSequences(seq_file);
+  LoadBlockSize(block_file);
   return;
 }
 
@@ -101,19 +109,6 @@ void SFABuild::DestructSequences(void) {
   return;
 }
 
-
-
-std::string SFABuild::GetFileStem(const std::string& path)  {
-  // going backward untill the '\/' character
-  int i;
-  for(i = path.length() - 1; i >= 0; -- i) {
-    if(path[i] == '/')  {
-      break;
-    }
-  }
-  return path.substr(i + 1, path.length() - i - 1);
-}
-
 void SFABuild::DumpSFA(std::string& dir, std::string& file_stem) {
   string lcp_file = dir + "/" + file_stem + ".lcp";
   string mcp_file = dir + "/" + file_stem + ".mcp";
@@ -163,16 +158,23 @@ void SFABuild::CountDBSize(void) {
 
 double SFABuild::GetDBSizeInMegaBase(void)  {
   if(!is_size_counted_)  {
+    assert(is_sequence_loaded_);
     this->CountDBSize();
   }
   return db_size_MB_;
 }
 
+bool SFABuild::CheckMultiParam(const SFAIDXTYPE& max_size)  {
+  double m = max_size / 1000000;
+  double n = GetDBSizeInMegaBase() / m;
+  return (m <= MAX_BLOCK);
+}
+
 
 // the sequences will be stored in global variables "header" and "sequence_"
-void SFABuild::LoadSequences(std::string& file_name)  {
+void SFABuild::LoadSequences(std::string& seq_file)  {
   vector<string> files_in;
-  files_in.push_back(file_name);
+  files_in.push_back(seq_file);
   num_seqs_ = (unsigned int) seq::totalSequenceCount(files_in);
   header_ = new char* [num_seqs_];
   sequence_ = new char* [num_seqs_];
@@ -186,6 +188,29 @@ void SFABuild::LoadSequences(std::string& file_name)  {
     }
   }
   is_header_loaded_ = is_sequence_loaded_ = true;
+  return;
+}
+
+void SFABuild::LoadBlockSize(std::string& block_file) {
+  std::ifstream in_fh(block_file.c_str(), std::ios::in | std::ios::binary);
+  if(!in_fh.good())  {
+    cout << "MANA::GenGraph::SFABuild::LoadBlockSize: Cannot read block size index file " << block_file << endl;
+    exit(1);
+  }
+  in_fh.read((char*) &num_blocks_, sizeof(RIDTYPE));
+  RIDTYPE t;
+  while(!in_fh.eof())  {
+    in_fh.read((char*) &t, sizeof(RIDTYPE));
+    block_size_.push_back(t);
+  }
+  in_fh.close();
+  block_size_.resize(block_size_.size() - 1);
+  is_multi_ = true;
+
+  // DEBUG
+  //for(int i = 0; i < block_size_.size(); ++ i) {
+  //  cout << block_size_[i] << endl;
+  //}
   return;
 }
 
@@ -218,10 +243,18 @@ void SFABuild::BuildSFADefault(void) {
   return;
 }
 
-void SFABuild::BuildSFAMulti(const SFAIDXTYPE max_size, std::string &dir, std::string &file_stem)  {
+void SFABuild::BuildSFAMulti(const SFAIDXTYPE& max_size, std::string &dir, std::string &file_stem)  {
+  // check whether the parameter setting is valid
+  if(!CheckMultiParam(max_size))  {
+    cout << "MANA::Index::SFABuild::BuildSFAMulti: The number of suffix array blocks exceeds the pre-set maximum (32), "; 
+    cout << "try increasing the size of each suffix array block." << endl;
+    exit(0);
+  }
+  // construct multi block-SAs
   RIDTYPE begin = 0;
   RIDTYPE block_ID = 0;
   SFAIDXTYPE accum_size = 0;
+  block_size_.push_back(0);
   for(RIDTYPE i = 0; i < num_seqs_; ++ i) {
     accum_size += (SFAIDXTYPE) strlen(sequence_[i]);
     if(accum_size >= max_size)  {
@@ -233,11 +266,38 @@ void SFABuild::BuildSFAMulti(const SFAIDXTYPE max_size, std::string &dir, std::s
       std::string block_stem = file_stem + "." + std::to_string(block_ID);
       DumpSFA(dir, block_stem);
       // update the index trackers
+      if(i + 1 < num_seqs_)  { block_size_.push_back(i + 1); }   // record the start of the current read block
       ++ block_ID;
       begin = i + 1;
       accum_size = 0;
     }
   }
+  // handle the last block
+  if(begin < num_seqs_ - 1)  {
+    if(is_sfa_built_) { delete suffix_array_; }
+    suffix_array_ = new GSA((char**) (sequence_ + begin), num_seqs_ - begin, true);
+    is_sfa_built_ = true;
+    // write the suffix array index
+    std::string block_stem = file_stem + "." + std::to_string(block_ID);
+    DumpSFA(dir, block_stem);
+    ++ block_ID;
+  }
+
+  // write the block information into disk
+  std::string out_file = dir + "/" + file_stem + ".bsz";
+  std::ofstream out_fh(out_file.c_str(), ios_base::out | ios_base::binary);
+  if(!out_fh.good())  {
+    cout << "MANA::BuildIndex::BuildSFAMulti: Cannot write block-size index file: " << out_file << endl;
+    exit(1);
+  }
+  out_fh.write((char*) &block_ID, sizeof(RIDTYPE));
+  for(int i = 0; i < block_size_.size(); ++ i) {
+    out_fh.write((char*) &block_size_[i], sizeof(RIDTYPE));
+  }
+  out_fh.close();
+  
+  //DEBUG
+  //cout << "Num blocks:  " << block_ID << endl;
   return;
 }
 
@@ -332,7 +392,7 @@ std::pair<SFAIDXTYPE, SFAIDXTYPE> SFABuild::SearchSFA(std::string& search_seed) 
 // find a list of maximal extension reads within the given range
 void SFABuild::GetMaxExtInfoWithinRange(
     std::pair<SFAIDXTYPE, SFAIDXTYPE>& range, 
-    std::list<PositionType>& pos_list
+    std::list<GSATYPE>& pos_list
 )  {
   if(!is_k_array_built_)  {
     cout << "Fatal Error: SFABuild::GetMaxExtRIDWithRange key array not built" << endl;
@@ -341,10 +401,45 @@ void SFABuild::GetMaxExtInfoWithinRange(
   SFAIDXTYPE index = range.first;
   do  {
     index = key_array_[index] + 1;
-    PositionType posT;
-    posT.rid = (RIDTYPE) suffix_array_->getId(index - 1);
-    posT.pos = (LCPTYPE) suffix_array_->getPos(index - 1);
+    GSATYPE posT;
+    posT.doc = (RIDTYPE) suffix_array_->getId(index - 1);
+    posT.pos = (POSTYPE) suffix_array_->getPos(index - 1);
     pos_list.push_back(posT);
   } while (index <= range.second);
   return;
+}
+
+// interface function that helps the access of the protected "sequence_" variable 
+void SFABuild::GetSuffixSeq(
+  const GSATYPE& s,   // the location of the sequence needs to be copied
+  const int& l,       // the length of the sequence needs to be copied
+  char* str           // (output) the output that holds the copied string
+) {
+  memcpy((void*) str, (void*) (sequence_[s.doc] + s.pos), l * sizeof(char));
+  str[l] = '\0';
+  return;
+}
+
+void SFABuild::GetSuffixSeq(
+  const int& block_ID,  // the ID of the block if multiple SFA was generated
+  const GSATYPE& s,     // the location of the sequence needs to be copied
+  const int& l,         // the length of the sequence needs to be copied
+  char* str             // (output) the output that holds the copied string
+) {
+  assert(is_multi_);
+  assert(block_ID < block_size_.size());
+
+  // DEBUG
+  //cout << "block ID:  " << block_ID << "  block_size: " << block_size_[block_ID] << endl;
+  memcpy((void*) str, (void*) (sequence_[s.doc + block_size_[block_ID]] + s.pos), l * sizeof(char));
+  str[l] = '\0';
+  //cout << str << endl;
+  return;
+}
+
+int SFABuild::GetNumBlocks(void) {
+  assert(is_multi_);        // verify the object contains multiple suffix array blocks
+  assert(num_blocks_ > 0);  // verify at least one block exists
+  assert(num_blocks_ == block_size_.size());   // verify that the begin sequence ID for each block is load
+  return num_blocks_;
 }

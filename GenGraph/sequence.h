@@ -15,7 +15,7 @@
 //#include "datatype.h"
 //#include "kmer.h"
 #include "alpha.h"
-#include "utils.h"
+#include "mana_common.h"
 #include "timer.h"
 #include "file.h"
 
