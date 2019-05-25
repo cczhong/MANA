@@ -24,13 +24,12 @@ bool Clump::IsPQueueEmpty(void)
 
 bool Clump::IsClumpIdentical(const CLUMPTYPE& a, const CLUMPTYPE& b)    
 {
-    return strcmp(a.key_prefix, b.key_prefix) == 0;
+    return (a.key_prefix == b.key_prefix);
 }
 
 void Clump::AppendClump(const CLUMPTYPE& a)   
 {
-    auto it = current_.suf_block.end();
-    current_.suf_block.insert(it, a.suf_block.begin(), a.suf_block.end());
+    current_.push_back(a);
     is_empty_ = false;
     return;
 }
@@ -45,10 +44,9 @@ void Clump::InitClumpPQueue(
     assert(!is_init_);
     assert(num_index > 0);
     // initilize the blocks
-    is_EOF_ = new bool[num_index];
-    memset(is_EOF_, false, num_index);
-    blk_clumps_ = new CLUMPTYPE[num_index];
-    blk_buffers_ = new GSATYPE[num_index];
+    is_EOF_.resize(num_index, false);
+    blk_clumps_.resize(num_index);
+    blk_buffers_.resize(num_index);
     for(int i = 0; i < num_index; ++ i) {
         blk_buffers_[i].doc = blk_buffers_[i].pos = 0;
     }
@@ -60,13 +58,6 @@ void Clump::InitClumpPQueue(
         is_EOF_[i] = !g;
         // insert the clump into priority queue if clump detection is successful
         if(g)    {  InsertClump(blk_clumps_[i]);    }
-        blk_clumps_[i].Clear();
-    }
-
-    // DEBUG print
-    while(!clump_queue_.empty())    {
-        cout << clump_queue_.top().key_prefix << endl;
-        clump_queue_.pop();
     }
     return;
 }
@@ -88,8 +79,7 @@ bool Clump::GetSuffixClump(
     clump.index_ID = index_ID;
     clump.suf_block.resize(1000);
     clump.suf_block[0] = buffer;  // boundary case OK because the first LCP is always 0
-    clump.key_prefix = new char[min_lcp + 1];
-    seqs.GetSuffixSeq(index_ID, buffer, min_lcp, clump.key_prefix);
+    clump.key_prefix = seqs.GetSuffixSeq(index_ID, buffer, min_lcp);
     // load the clumps
     GSATYPE h;  // a temporary info holder
     LCPTYPE l;  // a temporary info holder
@@ -97,15 +87,14 @@ bool Clump::GetSuffixClump(
     bool is_c_open = false;
 
     // DEBUG
-    cout << "Printing block:    " << index_ID << endl;
+    //cout << "Printing block:    " << index_ID << endl;
     while(true) {
         GSAfh[index_ID].read((char*) &h.doc, sizeof(RIDTYPE));
         GSAfh[index_ID].read((char*) &h.pos, sizeof(POSTYPE));
         LCPfh[index_ID].read((char*) &l, sizeof(LCPTYPE));
         
         // DEBUG
-        //char *tmp = new char[min_lcp + 1];
-        //seqs.GetSuffixSeq(index_ID, h, min_lcp, tmp);
+        //string tmp = seqs.GetSuffixSeq(index_ID, h, min_lcp);
         //cout << "SF: (" << tmp << ")\tLCP:    " << l << endl;
         //delete [] tmp;
 
@@ -115,6 +104,7 @@ bool Clump::GetSuffixClump(
                 // record the current suffix info into buffer
                 buffer = h;
                 clump.suf_block.resize(c_index);
+                clump.key_prefix = seqs.GetSuffixSeq(index_ID, clump.suf_block[0], min_lcp);
                 // terminate the current clump
                 return true;
             }   else    {
@@ -131,13 +121,71 @@ bool Clump::GetSuffixClump(
             clump.suf_block[++ c_index] = h;
 
         }
-        
         if(GSAfh[index_ID].eof() || LCPfh[index_ID].eof())    {   break;  }
         
     }
-    if(is_c_open)   {   clump.suf_block.resize(c_index);  }
 
     // DEBUG
     cout << "clump detected:    " << is_c_open << endl;
-    return is_c_open;
+
+    if(is_c_open)   {   
+        clump.suf_block.resize(c_index);  
+        return true;
+    }   else    {
+        return false;
+    }
+}
+
+bool Clump::NextClump(
+    std::ifstream* GSAfh,                // the array that contains the file handles to the generalized suffix array indexes
+    std::ifstream* LCPfh,                // the array that contains the file handles to the LCPs
+    SFABuild &seqs,                      // the sequences
+    const int& min_lcp                   // the minimum length of the LCP (overlap)
+)   {
+    if(clump_queue_.empty())    {  return false;  }
+    // clear the "current_" data structure
+    if(!is_empty_)  {   current_.clear();   }
+    // DEBUG
+    //cout << "Good here 0" << endl;
+    // get the lexicographically smallest index among all indexes
+    do
+    {
+        // DEBUG
+        //cout << "seq:   " << clump_queue_.top().key_prefix << endl;
+        //cout << "index  " << clump_queue_.top().index_ID << endl;
+
+        AppendClump(clump_queue_.top());
+        int idx = clump_queue_.top().index_ID;
+        clump_queue_.pop();
+
+        // DEBUG
+        //cout << "Good here 1" << endl;
+
+        // insert the new clump into queue
+        if(!is_EOF_[idx])   {
+            bool g = GetSuffixClump(
+                GSAfh, LCPfh, idx, seqs, min_lcp, blk_clumps_[idx], blk_buffers_[idx]
+            );  // g indicates whether a clump is retrieved (hence not EOF)
+
+            // DEBUG
+            //cout << "Good here 2" << endl;
+
+            is_EOF_[idx] = !g;
+            // insert the clump into priority queue if clump detection is successful
+            if(g)    {  InsertClump(blk_clumps_[idx]);  }
+            
+            // DEBUG
+            //cout << "Good here 3" << endl;
+        }
+    } while (!clump_queue_.empty() && current_[0].key_prefix == clump_queue_.top().key_prefix);
+    
+    // DEBUG
+    //cout << "!!! NEW CLUMP" << endl;
+    //for(int i = 0; i < current_.size(); ++ i)   {
+    //    cout << "   seq:   " << current_[i].key_prefix << " ID: " << current_[i].index_ID << endl;
+        //for(int j = 0; j < current_[i].suf_block.size(); ++ j)   {
+        //    cout << "   " << current_[i].suf_block[j].doc << "   " << current_[i].suf_block[j].pos << endl;
+        //}
+    //}
+    return true;
 }

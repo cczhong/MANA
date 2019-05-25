@@ -21,24 +21,18 @@
 #define _CLUMP_H_
 
 struct CLUMPTYPE    {
-    char* key_prefix;                   // the common prefix of the suffix block
+    std::string key_prefix;             // the common prefix of the suffix block
     std::vector<GSATYPE> suf_block;     // the suffix block
     int index_ID;                       // the index where this clump was retrieved
 
     void operator= (const CLUMPTYPE& a)
     {
-        this->key_prefix = new char[strlen(a.key_prefix) + 1];
-        strcpy(this->key_prefix, a.key_prefix);
+        this->key_prefix = a.key_prefix;
         this->suf_block = a.suf_block;
+        this->index_ID = a.index_ID;
         return;
     }
 
-    void Clear(void)    {
-        if(this->key_prefix != NULL && strlen(this->key_prefix) > 0)    {
-            delete [] this->key_prefix;
-        }
-        return;
-    }
 };
 
 class ClumpCmp  {
@@ -46,8 +40,8 @@ public:
     ClumpCmp()  {}
     bool operator() (const CLUMPTYPE &a, const CLUMPTYPE &b) const  
     {
-        assert(strlen(a.key_prefix) == strlen(b.key_prefix));
-        return (strcmp(a.key_prefix, b.key_prefix) > 0);
+        assert(a.key_prefix.length() == b.key_prefix.length());
+        return (a.key_prefix > b.key_prefix);
     }
 };
 
@@ -58,13 +52,6 @@ public:
     Clump(void) {   is_empty_ = true; is_init_ = false;   }
     ~Clump(void)    
     {   
-        if(!is_empty_)   
-            delete [] current_.key_prefix;    
-        if(is_init_)    {
-            delete [] is_EOF_;
-            delete [] blk_clumps_;
-            delete [] blk_buffers_;
-        }
         return;
     }
 
@@ -103,14 +90,22 @@ public:
         GSATYPE &buffer                      // (output) contains the first suffix of the next clump (if applicable)
     );  // returns true if clump recorded, returns false if reaches the end of file
 
+    // get the full clump from multiple index blocks
+    bool NextClump(
+        std::ifstream* GSAfh,                // the array that contains the file handles to the generalized suffix array indexes
+        std::ifstream* LCPfh,                // the array that contains the file handles to the LCPs
+        SFABuild &seqs,                      // the sequences
+        const int& min_lcp                   // the minimum length of the LCP (overlap)                 
+    ); 
+
 private:
     std::priority_queue<CLUMPTYPE, std::vector<CLUMPTYPE>, ClumpCmp> clump_queue_;
-    CLUMPTYPE current_;     // the lexicographically smallest clump (could contain clumps from multiple index files)
-    bool is_empty_;         // label whether "current_" contains information
-    bool is_init_;          // label whether the "is_EOF_" array is initialized
-    bool* is_EOF_;          // label whether the corresponding index has reached the end of file
-    CLUMPTYPE* blk_clumps_; // the clumps retrieved for each index
-    GSATYPE* blk_buffers_;  // the buffer for each index
+    std::vector<CLUMPTYPE> current_;        // the lexicographically smallest clump (could contain clumps from multiple index files)
+    bool is_empty_;                         // label whether "current_" contains information
+    bool is_init_;                          // label whether the "is_EOF_" array is initialized
+    std::vector<bool> is_EOF_;              // label whether the corresponding index has reached the end of file
+    std::vector<CLUMPTYPE> blk_clumps_;     // the clumps retrieved for each index
+    std::vector<GSATYPE> blk_buffers_;      // the buffer for each index
 };
 
 #endif

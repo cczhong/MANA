@@ -32,6 +32,13 @@ void Overlap::DetectOverlaps(
     Clump suf_clump;
     suf_clump.InitClumpPQueue(num_blocks, GSAfh, LCPfh, seqs, min_overlap);    // initilization
 
+    bool t;
+    do
+    {
+        t = suf_clump.NextClump(GSAfh, LCPfh, seqs, min_overlap);
+    } while (t);
+    
+
     //for(int i = 0; i < num_index; ++ i)   {
     //    bool success;
     //    do

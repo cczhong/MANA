@@ -127,6 +127,8 @@ int main(int argc, char** argv)  {
   if(is_verbose)  {
     cout << "MANA-GenGraph:: Read overlap computation is completed." << endl;
   }
+  delete db_seq;
+
 /*
   // initiate scoreing function
   ScoringFunction<int>* score_scheme = new ScoringFunction<int>(

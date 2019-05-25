@@ -50,17 +50,15 @@ class SFABuild {
   std::string GetHeader(int index);
   std::string GetSuffixSFA(int index);
   
-  void GetSuffixSeq(
+  std::string GetSuffixSeq(
     const GSATYPE& s,   // the location of the sequence needs to be copied
-    const int& l,       // the length of the sequence needs to be copied
-    char* str           // (output) the output that holds the copied string
+    const int& l        // the length of the sequence needs to be copied
   );
 
-  void GetSuffixSeq(
+  std::string GetSuffixSeq(
     const int& block_ID,  // the ID of the block if multiple SFA was generated
     const GSATYPE& s,     // the location of the sequence needs to be copied
-    const int& l,         // the length of the sequence needs to be copied
-    char* str             // (output) the output that holds the copied string
+    const int& l          // the length of the sequence needs to be copied
   );
 
   bool CheckMultiParam(const SFAIDXTYPE& max_size);

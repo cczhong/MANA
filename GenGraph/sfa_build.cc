@@ -410,31 +410,27 @@ void SFABuild::GetMaxExtInfoWithinRange(
 }
 
 // interface function that helps the access of the protected "sequence_" variable 
-void SFABuild::GetSuffixSeq(
+std::string SFABuild::GetSuffixSeq(
   const GSATYPE& s,   // the location of the sequence needs to be copied
-  const int& l,       // the length of the sequence needs to be copied
-  char* str           // (output) the output that holds the copied string
+  const int& l        // the length of the sequence needs to be copied
 ) {
-  memcpy((void*) str, (void*) (sequence_[s.doc] + s.pos), l * sizeof(char));
-  str[l] = '\0';
-  return;
+  string str((char*) (sequence_[s.doc] + s.pos), l * sizeof(char));
+  return str;
 }
 
-void SFABuild::GetSuffixSeq(
+std::string SFABuild::GetSuffixSeq(
   const int& block_ID,  // the ID of the block if multiple SFA was generated
   const GSATYPE& s,     // the location of the sequence needs to be copied
-  const int& l,         // the length of the sequence needs to be copied
-  char* str             // (output) the output that holds the copied string
+  const int& l          // the length of the sequence needs to be copied
 ) {
   assert(is_multi_);
   assert(block_ID < block_size_.size());
 
   // DEBUG
   //cout << "block ID:  " << block_ID << "  block_size: " << block_size_[block_ID] << endl;
-  memcpy((void*) str, (void*) (sequence_[s.doc + block_size_[block_ID]] + s.pos), l * sizeof(char));
-  str[l] = '\0';
+  string str((char*) (sequence_[s.doc + block_size_[block_ID]] + s.pos), l * sizeof(char));
   //cout << str << endl;
-  return;
+  return str;
 }
 
 int SFABuild::GetNumBlocks(void) {
