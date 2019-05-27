@@ -46,7 +46,9 @@ class SFABuild {
       std::pair<SFAIDXTYPE, SFAIDXTYPE>& range, 
       std::list<GSATYPE>& pos_list
   );
-  std::string GetSequence(int index);
+  std::string GetSequence(const RIDTYPE& index);
+  std::string GetSequence(const int& block_ID, const RIDTYPE& index);
+
   std::string GetHeader(int index);
   std::string GetSuffixSFA(int index);
   
@@ -64,6 +66,17 @@ class SFABuild {
   bool CheckMultiParam(const SFAIDXTYPE& max_size);
 
   int GetNumBlocks(void); // access the number of index blocks
+
+  int GetSeqLen(const RIDTYPE& r) {
+    assert(is_sequence_loaded_);
+    assert(r < num_seqs_);
+    return seq_len_[r];
+  }
+
+  // returns the length of the suffix
+  int GetSufLen(const int& block_ID, const GSATYPE& s); 
+
+  RIDTYPE GetFullRID(const int& block_ID, const RIDTYPE& r);
   
   friend class DatabaseIndex;
   friend class ReachableReads;
@@ -79,6 +92,7 @@ class SFABuild {
   double db_size_MB_;
   char** header_;
   char** sequence_;
+  int* seq_len_;
   GSA* suffix_array_;
   std::vector<SFAIDXTYPE> key_array_;
   bool is_header_loaded_, is_sequence_loaded_, is_sfa_built_, is_k_array_built_;

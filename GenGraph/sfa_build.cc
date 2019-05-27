@@ -149,7 +149,7 @@ void SFABuild::CountDBSize(void) {
   }
   db_size_MB_ = 0;
   for(int i = 0; i < num_seqs_; ++ i) {
-    db_size_MB_ += (double) strlen(sequence_[i]);
+    db_size_MB_ += (double) seq_len_[i];
   }
   db_size_MB_ /= 1000000;
   is_size_counted_ = true;
@@ -178,9 +178,11 @@ void SFABuild::LoadSequences(std::string& seq_file)  {
   num_seqs_ = (unsigned int) seq::totalSequenceCount(files_in);
   header_ = new char* [num_seqs_];
   sequence_ = new char* [num_seqs_];
+  seq_len_ = new int [num_seqs_];
   seq::loadSequences(files_in, header_, sequence_, TAGSEQ);
   for(int i = 0; i < num_seqs_; ++ i) {
     int l = strlen(sequence_[i]);
+    seq_len_[i] = l;
     // chomp tailing non-characters
     while(!isalpha(sequence_[i][l - 1]))  {
       sequence_[i][l - 1] = '\0';
@@ -341,7 +343,7 @@ void SFABuild::BuildKeyArrayDefault(void)  {
 } 
 
 // access a given sequence
-std::string SFABuild::GetSequence(int index)  {
+std::string SFABuild::GetSequence(const RIDTYPE& index)  {
   if(!is_sequence_loaded_)  {
     cout << "Warning: SFABuild::GetSequence no sequence loaded" << endl;
     return string("");
@@ -351,6 +353,22 @@ std::string SFABuild::GetSequence(int index)  {
     return string("");
   }
   return string(sequence_[index]);
+}
+
+std::string SFABuild::GetSequence(const int& block_ID, const RIDTYPE& index)  {
+  assert(is_sequence_loaded_);
+  assert(is_multi_);
+  assert(block_ID < num_blocks_); 
+  assert(block_size_[block_ID] + index < num_seqs_);
+  return string(sequence_[index + block_size_[block_ID]]);
+}
+
+RIDTYPE SFABuild::GetFullRID(const int& block_ID, const RIDTYPE& r) {
+  assert(is_sequence_loaded_);
+  assert(is_multi_);
+  assert(block_ID < num_blocks_); 
+  assert(block_size_[block_ID] + r < num_seqs_);
+  return block_size_[block_ID] + r;
 }
 
 std::string SFABuild::GetHeader(int index)  {
@@ -438,4 +456,18 @@ int SFABuild::GetNumBlocks(void) {
   assert(num_blocks_ > 0);  // verify at least one block exists
   assert(num_blocks_ == block_size_.size());   // verify that the begin sequence ID for each block is load
   return num_blocks_;
+}
+
+int SFABuild::GetSufLen(const int& block_ID, const GSATYPE& s) {
+  assert(is_sequence_loaded_);
+  assert(is_multi_);
+  assert(block_ID < num_blocks_); 
+  if(block_size_[block_ID] + s.doc >= num_seqs_)  {
+    // TODO: solving the problem by adding the number of entries at top for each index
+    cout << "Num seqs:  " << num_seqs_ << endl;
+    cout << "block size:  " << block_size_[block_ID] << endl;
+    cout << "seq index: " << s.doc << endl;
+  }
+  assert(block_size_[block_ID] + s.doc < num_seqs_);
+  return seq_len_[s.doc + block_size_[block_ID]] - s.pos;
 }

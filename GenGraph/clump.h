@@ -23,12 +23,14 @@
 struct CLUMPTYPE    {
     std::string key_prefix;             // the common prefix of the suffix block
     std::vector<GSATYPE> suf_block;     // the suffix block
+    std::vector<LCPTYPE> lcp_block;     // the lcp block
     int index_ID;                       // the index where this clump was retrieved
 
     void operator= (const CLUMPTYPE& a)
     {
         this->key_prefix = a.key_prefix;
         this->suf_block = a.suf_block;
+        this->lcp_block = a.lcp_block;
         this->index_ID = a.index_ID;
         return;
     }
@@ -98,6 +100,8 @@ public:
         const int& min_lcp                   // the minimum length of the LCP (overlap)                 
     ); 
 
+    friend class Overlap;
+    
 private:
     std::priority_queue<CLUMPTYPE, std::vector<CLUMPTYPE>, ClumpCmp> clump_queue_;
     std::vector<CLUMPTYPE> current_;        // the lexicographically smallest clump (could contain clumps from multiple index files)

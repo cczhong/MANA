@@ -51,6 +51,13 @@ class Overlap   {
     std::ifstream f(file_name.c_str());
     return f.good();
   }
+
+  // find the perfect suffix-prefix overlap from the set of clumps sharing the same k-mer
+  void ResolvePerfectOverlap(
+    std::vector<CLUMPTYPE>& m_clump,
+    SFABuild& seqs
+  );
+
 };
 
 #endif

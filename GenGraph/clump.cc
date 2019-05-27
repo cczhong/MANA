@@ -79,6 +79,8 @@ bool Clump::GetSuffixClump(
     clump.index_ID = index_ID;
     clump.suf_block.resize(1000);
     clump.suf_block[0] = buffer;  // boundary case OK because the first LCP is always 0
+    clump.lcp_block.resize(1000);
+    clump.lcp_block[0] = 0;
     clump.key_prefix = seqs.GetSuffixSeq(index_ID, buffer, min_lcp);
     // load the clumps
     GSATYPE h;  // a temporary info holder
@@ -89,10 +91,15 @@ bool Clump::GetSuffixClump(
     // DEBUG
     //cout << "Printing block:    " << index_ID << endl;
     while(true) {
+
+        if(GSAfh[index_ID].peek() == EOF || LCPfh[index_ID].peek() == EOF)    {   break;  }
+
         GSAfh[index_ID].read((char*) &h.doc, sizeof(RIDTYPE));
         GSAfh[index_ID].read((char*) &h.pos, sizeof(POSTYPE));
         LCPfh[index_ID].read((char*) &l, sizeof(LCPTYPE));
         
+        
+
         // DEBUG
         //string tmp = seqs.GetSuffixSeq(index_ID, h, min_lcp);
         //cout << "SF: (" << tmp << ")\tLCP:    " << l << endl;
@@ -103,13 +110,15 @@ bool Clump::GetSuffixClump(
             if(is_c_open)    {
                 // record the current suffix info into buffer
                 buffer = h;
-                clump.suf_block.resize(c_index);
+                clump.suf_block.resize(c_index + 1);
+                clump.lcp_block.resize(c_index + 1);
                 clump.key_prefix = seqs.GetSuffixSeq(index_ID, clump.suf_block[0], min_lcp);
                 // terminate the current clump
                 return true;
             }   else    {
                 // update the head of the clump
                 clump.suf_block[0] = h;
+                clump.lcp_block[0] = l;
             }        
         }   else    {
             // indicates a continuation of the clump
@@ -117,19 +126,22 @@ bool Clump::GetSuffixClump(
             if(clump.suf_block.size() <= c_index - 1) {
                 // double the clump size
                 clump.suf_block.resize(2 * clump.suf_block.size());
+                clump.lcp_block.resize(2 * clump.lcp_block.size());
+                assert(clump.suf_block.size() == clump.lcp_block.size());
             }
-            clump.suf_block[++ c_index] = h;
+            ++ c_index;
+            clump.suf_block[c_index] = h;
+            clump.lcp_block[c_index] = l;
 
         }
-        if(GSAfh[index_ID].eof() || LCPfh[index_ID].eof())    {   break;  }
-        
     }
-
+    assert(!is_c_open || c_index >= 1);
     // DEBUG
-    cout << "clump detected:    " << is_c_open << endl;
+    //cout << "clump detected:    " << is_c_open << endl;
 
     if(is_c_open)   {   
-        clump.suf_block.resize(c_index);  
+        clump.suf_block.resize(c_index + 1);  
+        clump.lcp_block.resize(c_index + 1);
         return true;
     }   else    {
         return false;

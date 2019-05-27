@@ -36,8 +36,12 @@ void Overlap::DetectOverlaps(
     do
     {
         t = suf_clump.NextClump(GSAfh, LCPfh, seqs, min_overlap);
+        if(t)   {
+            ResolvePerfectOverlap(suf_clump.current_, seqs);
+        }
     } while (t);
     
+
 
     //for(int i = 0; i < num_index; ++ i)   {
     //    bool success;
@@ -113,5 +117,44 @@ void Overlap::OpenIndexFiles(
         //cout << "loaded:    " << i << endl;
     }
     
+    return;
+}
+
+
+void Overlap::ResolvePerfectOverlap(std::vector<CLUMPTYPE>& m_clump, SFABuild &seqs)    {
+    assert(m_clump.size() > 0);
+    for(int i = 0; i < m_clump.size(); ++ i)   {
+        assert(m_clump[i].suf_block.size() > 1);
+        assert(m_clump[i].suf_block.size() == m_clump[i].lcp_block.size());
+        vector<GSATYPE> suf_stack(m_clump[i].suf_block.size());  // stack that contains full suffixes
+        vector<LCPTYPE> lcp_stack(m_clump[i].lcp_block.size());  // stach that contains the length of the lcp
+        int s_index = 0;            // the size of the current index
+        for(int j = 1; j < m_clump[i].suf_block.size(); ++ j)   {
+            // maintain stack validity
+            while(s_index > 0 && m_clump[i].lcp_block[j] < lcp_stack[s_index]) {
+                -- s_index;     // mimic stack popping, this source read becomes invalid
+            }
+            // detect complete suffix overlap
+            if(m_clump[i].lcp_block[j] == seqs.GetSufLen(m_clump[i].index_ID, m_clump[i].suf_block[j]))    {
+                // TODO: more adavanced insert function to eliminate redundancy
+                suf_stack[s_index] = m_clump[i].suf_block[j - 1];
+                lcp_stack[s_index] = m_clump[i].lcp_block[j - 1];
+                ++ s_index;
+            }
+            // detect complete prefix overlap
+            if(m_clump[i].suf_block[j].pos == 0)    {
+                // it should overlap with all suffixes in the stack
+                for(int k = 0; k < s_index; ++ k)   {
+                    if(lcp_stack[k] < seqs.GetSufLen(m_clump[i].index_ID, m_clump[i].suf_block[j])) {
+                        RIDTYPE source = seqs.GetFullRID(m_clump[i].index_ID, suf_stack[k].doc);
+                        RIDTYPE target = seqs.GetFullRID(m_clump[i].index_ID, m_clump[i].suf_block[j].doc);
+                        cout << "Overlap detected:  " << endl;
+                        cout << seqs.GetSequence(source) << endl;
+                        cout << seqs.GetSequence(target) << endl;
+                    }
+                }
+            }
+        }
+    }
     return;
 }
