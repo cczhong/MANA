@@ -432,7 +432,16 @@ std::string SFABuild::GetSuffixSeq(
   const GSATYPE& s,   // the location of the sequence needs to be copied
   const int& l        // the length of the sequence needs to be copied
 ) {
+  assert(s.doc < num_seqs_);
   string str((char*) (sequence_[s.doc] + s.pos), l * sizeof(char));
+  return str;
+}
+
+std::string SFABuild::GetSuffixSeq(
+  const GSATYPE& s    // the location of the sequence needs to be copied
+) {
+  assert(s.doc < num_seqs_);
+  string str((char*) (sequence_[s.doc] + s.pos));
   return str;
 }
 
@@ -447,6 +456,20 @@ std::string SFABuild::GetSuffixSeq(
   // DEBUG
   //cout << "block ID:  " << block_ID << "  block_size: " << block_size_[block_ID] << endl;
   string str((char*) (sequence_[s.doc + block_size_[block_ID]] + s.pos), l * sizeof(char));
+  //cout << str << endl;
+  return str;
+}
+
+std::string SFABuild::GetSuffixSeq(
+  const int& block_ID,  // the ID of the block if multiple SFA was generated
+  const GSATYPE& s      // the location of the sequence needs to be copied
+) {
+  assert(is_multi_);
+  assert(block_ID < block_size_.size());
+
+  // DEBUG
+  //cout << "block ID:  " << block_ID << "  block_size: " << block_size_[block_ID] << endl;
+  string str((char*) (sequence_[s.doc + block_size_[block_ID]] + s.pos));
   //cout << str << endl;
   return str;
 }

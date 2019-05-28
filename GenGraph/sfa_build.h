@@ -58,9 +58,18 @@ class SFABuild {
   );
 
   std::string GetSuffixSeq(
+    const GSATYPE& s    // the location of the sequence needs to be copied
+  );
+
+  std::string GetSuffixSeq(
     const int& block_ID,  // the ID of the block if multiple SFA was generated
     const GSATYPE& s,     // the location of the sequence needs to be copied
     const int& l          // the length of the sequence needs to be copied
+  );
+
+  std::string GetSuffixSeq(
+    const int& block_ID,  // the ID of the block if multiple SFA was generated
+    const GSATYPE& s      // the location of the sequence needs to be copied
   );
 
   bool CheckMultiParam(const SFAIDXTYPE& max_size);
@@ -85,6 +94,7 @@ class SFABuild {
   friend class AssembleExtend;
   friend class ReMap;
   friend class Unitiger;
+  friend class Clump;
 
  protected:
   // data begin

@@ -1,5 +1,6 @@
 #include "gsa.h"
 #include "sfa_build.h"
+#include "util_func.h"
 
 #include <iostream>
 #include <fstream>
@@ -100,11 +101,24 @@ public:
         const int& min_lcp                   // the minimum length of the LCP (overlap)                 
     ); 
 
+    // merge multiple clumps from different indexes
+    void MergeMultiClumps(
+        SFABuild& seqs                      // the sequences
+    );
+
+    // merge a pair of clumps
+    CLUMPTYPE MergeTwoClumps(
+        const CLUMPTYPE& a,
+        const CLUMPTYPE& b,
+        SFABuild& seqs
+    );
+
     friend class Overlap;
     
 private:
     std::priority_queue<CLUMPTYPE, std::vector<CLUMPTYPE>, ClumpCmp> clump_queue_;
-    std::vector<CLUMPTYPE> current_;        // the lexicographically smallest clump (could contain clumps from multiple index files)
+    std::vector<CLUMPTYPE> multi_current_;  // the lexicographically smallest clump (could contain clumps from multiple index files)
+    CLUMPTYPE current_;                     // the merged current block of suffixes
     bool is_empty_;                         // label whether "current_" contains information
     bool is_init_;                          // label whether the "is_EOF_" array is initialized
     std::vector<bool> is_EOF_;              // label whether the corresponding index has reached the end of file

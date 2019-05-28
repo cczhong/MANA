@@ -19,6 +19,13 @@
 #ifndef _OVERLAP_H_
 #define _OVERLAP_H_
 
+// a group of reads sharing a common k-mer 
+struct KREADGROUPTYPE  {
+  std::vector<RIDTYPE> group_ID;
+  std::vector<POSTYPE> kmer_begin;
+  std::vector<POSTYPE> read_length;
+};
+
 class Overlap   {
  public:
   Overlap(void);
@@ -54,7 +61,7 @@ class Overlap   {
 
   // find the perfect suffix-prefix overlap from the set of clumps sharing the same k-mer
   void ResolvePerfectOverlap(
-    std::vector<CLUMPTYPE>& m_clump,
+    const CLUMPTYPE& clump,
     SFABuild& seqs
   );
 
