@@ -132,10 +132,14 @@ int main(int argc, char** argv)  {
   UtilFunc util;
   string db_stem = util.GetFileStem(db_file);
   SFABuild db_seq(db_file);
+  db_seq.BuildSFAMulti(500000, workspace_dir, db_stem);
   //db_seq.BuildSFAMulti(15000000, workspace_dir, db_stem);
-  db_seq.BuildSFAMulti(5, workspace_dir, db_stem);
+  //db_seq.BuildSFAMulti(5, workspace_dir, db_stem);
   cout << " Index file written." << endl;
   cout << "============================================================" << endl;
+
+  // DEBUG
+  //db_seq.PrintAllSuffixes();
 
   //db_seq.BuildSFADefault();
   //db_seq.BuildKeyArrayDefault();

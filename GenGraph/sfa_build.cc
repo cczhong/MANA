@@ -80,6 +80,24 @@ void SFABuild::PrintAllSeqs(void)  {
   return;
 }
 
+void SFABuild::PrintAllSuffixes(void) {
+  assert(is_sfa_built_);
+  suffix_array_->printSuffix();
+}
+
+void SFABuild::PrintContainedInfo() {
+  assert(is_contained_init_);
+  assert(is_sequence_loaded_);
+  for(RIDTYPE i = 0; i < num_seqs_; ++ i) {
+    if(is_contained_[i])  {
+      //cout << "===contained read found===" << endl;
+      //cout << sequence_[i] << endl;
+      //cout << sequence_[contained_by_[i]] << endl;
+      cout << i << endl;
+    }
+  }
+}
+
 void SFABuild::DestructSFA(void)  {
   // clear suffix array and key array to save memory
   suffix_array_->clear();
@@ -182,12 +200,12 @@ void SFABuild::LoadSequences(std::string& seq_file)  {
   seq::loadSequences(files_in, header_, sequence_, TAGSEQ);
   for(int i = 0; i < num_seqs_; ++ i) {
     int l = strlen(sequence_[i]);
-    seq_len_[i] = l;
     // chomp tailing non-characters
     while(!isalpha(sequence_[i][l - 1]))  {
-      sequence_[i][l - 1] = '\0';
       -- l;
     }
+    sequence_[i][l] = '\0';
+    seq_len_[i] = l;
   }
   is_header_loaded_ = is_sequence_loaded_ = true;
   return;
@@ -210,8 +228,9 @@ void SFABuild::LoadBlockSize(std::string& block_file) {
   is_multi_ = true;
 
   // DEBUG
+  //cout << "=====Block sizes=====" << endl;
   //for(int i = 0; i < block_size_.size(); ++ i) {
-  //  cout << block_size_[i] << endl;
+  //  cout << i << "  " << block_size_[i] << endl;
   //}
   return;
 }
@@ -485,12 +504,15 @@ int SFABuild::GetSufLen(const int& block_ID, const GSATYPE& s) {
   assert(is_sequence_loaded_);
   assert(is_multi_);
   assert(block_ID < num_blocks_); 
-  if(block_size_[block_ID] + s.doc >= num_seqs_)  {
+  //if(block_size_[block_ID] + s.doc >= num_seqs_)  {
     // TODO: solving the problem by adding the number of entries at top for each index
-    cout << "Num seqs:  " << num_seqs_ << endl;
-    cout << "block size:  " << block_size_[block_ID] << endl;
-    cout << "seq index: " << s.doc << endl;
-  }
+  //  cout << "Num seqs:  " << num_seqs_ << endl;
+  //  cout << "block size:  " << block_size_[block_ID] << endl;
+  //  cout << "seq index: " << s.doc << endl;
+  //}
   assert(block_size_[block_ID] + s.doc < num_seqs_);
+  // DEBUG
+  //cout << "GetSufLen: " << seq_len_[s.doc + block_size_[block_ID]] << endl;
+  //cout << "GetSufLen: " << s.pos << endl;
   return seq_len_[s.doc + block_size_[block_ID]] - s.pos;
 }

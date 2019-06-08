@@ -41,6 +41,7 @@ class SFABuild {
   void CountDBSize(void);
   double GetDBSizeInMegaBase(void);
   void PrintAllSeqs(void);
+  void PrintAllSuffixes(void);
   std::pair<SFAIDXTYPE, SFAIDXTYPE> SearchSFA(std::string& search_seed);
   void GetMaxExtInfoWithinRange(
       std::pair<SFAIDXTYPE, SFAIDXTYPE>& range, 
@@ -86,6 +87,16 @@ class SFABuild {
   int GetSufLen(const int& block_ID, const GSATYPE& s); 
 
   RIDTYPE GetFullRID(const int& block_ID, const RIDTYPE& r);
+
+  void InitContainedInfo()  {
+    assert(is_sequence_loaded_);
+    contained_by_.resize(num_seqs_);
+    is_contained_.resize(num_seqs_);
+    is_contained_init_ = true;
+    return;
+  }
+
+  void PrintContainedInfo();
   
   friend class DatabaseIndex;
   friend class ReachableReads;
@@ -95,6 +106,7 @@ class SFABuild {
   friend class ReMap;
   friend class Unitiger;
   friend class Clump;
+  friend class Overlap;
 
  protected:
   // data begin
@@ -110,6 +122,9 @@ class SFABuild {
   bool is_multi_;
   int num_blocks_;
   std::vector<RIDTYPE> block_size_; 
+  bool is_contained_init_;
+  std::vector<RIDTYPE> contained_by_;
+  std::vector<bool> is_contained_;
   // methods begin
   void BuildSuffixArray(char** sequences, GSA* suffix_array);
   void BuildKeyArray(GSA* suffix_array, std::vector<SFAIDXTYPE>& key_array);

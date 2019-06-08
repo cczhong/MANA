@@ -124,6 +124,7 @@ int main(int argc, char** argv)  {
   }
   Overlap overlap_obj;
   overlap_obj.DetectOverlaps(*db_seq, workspace_dir, db_stem, 10);
+  overlap_obj.DetectUnitigs(workspace_dir, db_stem, *db_seq);
   if(is_verbose)  {
     cout << "MANA-GenGraph:: Read overlap computation is completed." << endl;
   }
